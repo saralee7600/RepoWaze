@@ -1,0 +1,20 @@
+# Project Core Rules & Development Guidelines
+
+## 1. Package Management & Dependencies (CRITICAL)
+- **DO NOT** install, remove, or modify any npm packages or dependencies without explicit prior approval from the user.
+- Always check if an existing library or built-in Node/NestJS tool can solve the task before suggesting any new package.
+
+## 2. Build & Verification
+- After making significant code changes or fixing errors, **always** run the build command (e.g., `npm run build` or `nest build`) to verify there are no compilation or type errors.
+- Never assume code works without verifying it compiles successfully.
+
+## 3. Strict Architectural Patterns (The Repeatable Workflow)
+When creating or modifying features/modules, strictly follow this modular pattern for each Entity:
+1. **Shared Interface/DTO:** Define clean, flat interfaces in the `shared/` directory first if it's shared between client and server.
+2. **Database Entity:** Create the TypeORM Entity class in the server with proper relations and cascading rules (e.g., `onDelete: 'CASCADE'`).
+3. **REST API (Controller & Service):** Implement clean controllers and services following NestJS best practices.
+- Do not mix business logic inside controllers; keep it strictly in services.
+
+## 4. TypeScript & Code Quality
+- Respect the strict TypeScript configuration. Do not bypass type safety with careless 'any' casts unless absolutely necessary and discussed.
+- Keep code clean, modular, and split into clear separate files (avoid giant monolithic files).
