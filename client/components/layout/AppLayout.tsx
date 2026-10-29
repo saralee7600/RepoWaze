@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Toaster } from '@/components/ui/sonner';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
 
@@ -40,6 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </main>
       </div>
+      <Toaster position="bottom-right" richColors />
     </div>
   );
 }
