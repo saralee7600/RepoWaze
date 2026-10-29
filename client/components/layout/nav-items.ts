@@ -5,6 +5,8 @@ export interface NavItem {
   label: string;
   description: string;
   icon: LucideIcon;
+  /** Extra route prefixes that keep this item highlighted (e.g. its detail pages). */
+  alsoActiveFor?: readonly string[];
 }
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -13,6 +15,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
     label: 'Dashboard',
     description: 'Overview of all analyzed projects',
     icon: LayoutDashboard,
+    alsoActiveFor: ['/projects'],
   },
   {
     href: '/import',
@@ -24,7 +27,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
 
 /** Exact match for the root route, prefix match for everything else. */
 export function isNavItemActive(item: NavItem, pathname: string): boolean {
-  return item.href === '/'
-    ? pathname === '/'
-    : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const matches = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
+  if (item.alsoActiveFor?.some(matches)) return true;
+  return item.href === '/' ? pathname === '/' : matches(item.href);
 }

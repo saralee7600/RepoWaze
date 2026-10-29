@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import type { IProject } from '@repowaze/shared';
 import { ImportProjectDto } from './dto/import-project.dto';
@@ -13,8 +22,8 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.service.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findOne(id);
   }
 
   /** Imports a GitHub repository's TypeORM entities as a project graph. */

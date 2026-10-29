@@ -1,9 +1,10 @@
+import Link from 'next/link';
 import { Boxes, CalendarDays, ExternalLink, FolderGit2, Waypoints } from 'lucide-react';
 import { displayUrl, formatDate, formatNumber, pluralize } from '@/lib/format';
-import type { Project } from '@/types/project';
+import type { ProjectSummary } from '@/types/api';
 
 interface ProjectCardProps {
-  project: Project;
+  project: ProjectSummary;
 }
 
 interface CountBadgeProps {
@@ -24,7 +25,7 @@ function CountBadge({ icon: Icon, count, singular, plural }: CountBadgeProps) {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { repoName, repoUrl, createdAt, nodes, edges } = project;
+  const { id, repoName, repoUrl, createdAt, nodeCount, edgeCount } = project;
 
   return (
     <article className="group relative flex w-full flex-col gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5">
@@ -35,7 +36,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-sm font-semibold tracking-tight text-foreground" title={repoName}>
-            {repoName}
+            {/* Stretched link: the pseudo-element makes the whole card clickable. */}
+            <Link
+              href={`/projects/${id}`}
+              className="rounded-sm after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"
+            >
+              {repoName}
+            </Link>
           </h3>
           <a
             href={repoUrl}
@@ -43,7 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             rel="noopener noreferrer"
             dir="ltr"
             title={repoUrl}
-            className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
+            className="relative z-10 mt-0.5 flex w-fit max-w-full items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:text-primary"
           >
             <span className="truncate">{displayUrl(repoUrl)}</span>
             <ExternalLink className="size-3 shrink-0" aria-hidden="true" />
@@ -53,8 +60,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <CountBadge icon={Boxes} count={nodes.length} singular="node" plural="nodes" />
-        <CountBadge icon={Waypoints} count={edges.length} singular="relation" plural="relations" />
+        <CountBadge icon={Boxes} count={nodeCount} singular="node" plural="nodes" />
+        <CountBadge icon={Waypoints} count={edgeCount} singular="relation" plural="relations" />
       </div>
 
       <div className="mt-auto flex items-center gap-1.5 border-t border-border pt-3 text-xs text-muted-foreground">

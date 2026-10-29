@@ -2,11 +2,12 @@ import {
   BadRequestException,
   Injectable,
   Logger,
+  NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import type { IProject } from '@repowaze/shared';
+import type { IProject, IProjectSummary } from '@repowaze/shared';
 import { ProjectEntity } from './project.entity';
 import { NodeEntity } from '../nodes/node.entity';
 import { EdgeEntity } from '../edges/edge.entity';
@@ -31,12 +32,51 @@ export class ProjectsService {
     private readonly parser: EntityParserService,
   ) {}
 
-  findAll() {
-    return this.repo.find();
+  /** Every project (newest first) with its node and edge counts, without loading the graph. */
+  async findAll(): Promise<IProjectSummary[]> {
+    const [projects, nodeCounts, edgeCounts] = await Promise.all([
+      this.repo.find({ order: { createdAt: 'DESC', id: 'DESC' } }),
+      this.countByProject(NodeEntity, 'node'),
+      this.countByProject(EdgeEntity, 'edge'),
+    ]);
+
+    return projects.map((project) => ({
+      id: project.id,
+      repoUrl: project.repoUrl,
+      repoName: project.repoName,
+      createdAt: project.createdAt,
+      nodeCount: nodeCounts.get(project.id) ?? 0,
+      edgeCount: edgeCounts.get(project.id) ?? 0,
+    }));
   }
 
-  findOne(id: number) {
-    return this.repo.findOne({ where: { id } });
+  /** A single project with all of its nodes and edges. Throws 404 when it does not exist. */
+  async findOne(id: number): Promise<ProjectEntity> {
+    const project = await this.repo.findOne({
+      where: { id },
+      relations: { nodes: true, edges: true },
+      order: { nodes: { id: 'ASC' }, edges: { id: 'ASC' } },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project ${id} was not found`);
+    }
+    return project;
+  }
+
+  /** `projectId -> row count` for a table that has a `projectId` column. */
+  private async countByProject(
+    target: typeof NodeEntity | typeof EdgeEntity,
+    alias: string,
+  ): Promise<Map<number, number>> {
+    const rows = await this.dataSource
+      .getRepository(target)
+      .createQueryBuilder(alias)
+      .select(`${alias}.projectId`, 'projectId')
+      .addSelect('COUNT(*)', 'total')
+      .groupBy(`${alias}.projectId`)
+      .getRawMany<{ projectId: number | string; total: number | string }>();
+
+    return new Map(rows.map((row) => [Number(row.projectId), Number(row.total)]));
   }
 
   async create(data: Partial<IProject>) {

@@ -3,16 +3,16 @@
 import { useMemo, useState } from 'react';
 import { Boxes, FolderGit2, Search, Waypoints, X } from 'lucide-react';
 import { pluralize } from '@/lib/format';
-import type { Project } from '@/types/project';
+import type { ProjectSummary } from '@/types/api';
 import { EmptyState } from './EmptyState';
 import { MetricCard } from './MetricCard';
 import { ProjectCard } from './ProjectCard';
 
 interface DashboardViewProps {
-  projects: Project[];
+  projects: ProjectSummary[];
 }
 
-function matchesQuery(project: Project, normalizedQuery: string): boolean {
+function matchesQuery(project: ProjectSummary, normalizedQuery: string): boolean {
   if (normalizedQuery === '') return true;
   return (
     project.repoName.toLowerCase().includes(normalizedQuery) ||
@@ -26,8 +26,8 @@ export function DashboardView({ projects }: DashboardViewProps) {
   const totals = useMemo(
     () => ({
       projects: projects.length,
-      nodes: projects.reduce((sum, p) => sum + p.nodes.length, 0),
-      edges: projects.reduce((sum, p) => sum + p.edges.length, 0),
+      nodes: projects.reduce((sum, p) => sum + p.nodeCount, 0),
+      edges: projects.reduce((sum, p) => sum + p.edgeCount, 0),
     }),
     [projects],
   );
@@ -38,6 +38,9 @@ export function DashboardView({ projects }: DashboardViewProps) {
   }, [projects, query]);
 
   const isFiltering = query.trim() !== '';
+
+  // Nothing imported yet: skip the zeroed metrics and search, and point straight at the importer.
+  if (projects.length === 0) return <EmptyState />;
 
   return (
     <div className="space-y-8">

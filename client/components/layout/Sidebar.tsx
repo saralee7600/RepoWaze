@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Network, X } from 'lucide-react';
@@ -13,9 +14,47 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-export function Sidebar({ open, onClose }: SidebarProps) {
-  const pathname = usePathname();
+interface NavLinksProps {
+  /** Current route; `null` while it isn't known yet (nothing is highlighted). */
+  pathname: string | null;
+  onNavigate: () => void;
+}
 
+function NavLinks({ pathname, onNavigate }: NavLinksProps) {
+  return NAV_ITEMS.map((item) => {
+    const active = pathname !== null && isNavItemActive(item, pathname);
+    const Icon = item.icon;
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onNavigate}
+        aria-current={active ? 'page' : undefined}
+        className={cn(
+          'group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          active
+            ? 'bg-accent text-foreground ring-1 ring-border'
+            : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
+        )}
+      >
+        <Icon
+          aria-hidden="true"
+          className={cn(
+            'size-4 shrink-0 transition-colors',
+            active ? 'text-primary' : 'group-hover:text-foreground',
+          )}
+        />
+        {item.label}
+      </Link>
+    );
+  });
+}
+
+function RouteNavLinks({ onNavigate }: Pick<NavLinksProps, 'onNavigate'>) {
+  return <NavLinks pathname={usePathname()} onNavigate={onNavigate} />;
+}
+
+export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
       {/* Mobile backdrop */}
@@ -61,33 +100,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
             Workspace
           </p>
-          {NAV_ITEMS.map((item) => {
-            const active = isNavItemActive(item, pathname);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                  active
-                    ? 'bg-accent text-foreground ring-1 ring-border'
-                    : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground',
-                )}
-              >
-                <Icon
-                  aria-hidden="true"
-                  className={cn(
-                    'size-4 shrink-0 transition-colors',
-                    active ? 'text-primary' : 'group-hover:text-foreground',
-                  )}
-                />
-                {item.label}
-              </Link>
-            );
-          })}
+          {/* The active item needs the pathname, which isn't known while prerendering dynamic routes. */}
+          <Suspense fallback={<NavLinks pathname={null} onNavigate={onClose} />}>
+            <RouteNavLinks onNavigate={onClose} />
+          </Suspense>
         </nav>
 
         <div className="shrink-0 border-t border-border p-3">

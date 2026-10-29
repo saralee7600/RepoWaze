@@ -139,3 +139,27 @@ body {
 * {
   border-color: var(--border);
 }
+
+/* React Flow (project graph) mapped onto the app's design tokens, so it follows the theme switch. */
+.react-flow {
+  --xy-edge-stroke: var(--muted-foreground);
+  --xy-edge-stroke-selected: var(--primary);
+  --xy-edge-label-background-color: var(--card);
+  --xy-edge-label-color: var(--foreground);
+  --xy-handle-background-color: var(--primary);
+  --xy-handle-border-color: var(--card);
+  --xy-background-pattern-dots-color: var(--border);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-background-color-hover: var(--accent);
+  --xy-controls-button-color: var(--foreground);
+  --xy-controls-button-color-hover: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-minimap-background-color: var(--card);
+  --xy-minimap-mask-background-color: color-mix(in srgb, var(--background) 70%, transparent);
+  --xy-minimap-node-background-color: var(--muted);
+  --xy-attribution-background-color: transparent;
+}
+
+.react-flow__edge-text {
+  font-size: 11px;
+}

@@ -4,11 +4,12 @@ import { buttonStyles } from '@/components/ui/buttonStyles';
 
 interface EmptyStateProps {
   /** Active search text. When set, the state explains that nothing matched. */
-  query: string;
-  onClearSearch: () => void;
+  query?: string;
+  /** Resets the search; the "Clear search" button only shows while searching. */
+  onClearSearch?: () => void;
 }
 
-export function EmptyState({ query, onClearSearch }: EmptyStateProps) {
+export function EmptyState({ query = '', onClearSearch }: EmptyStateProps) {
   const searching = query.trim().length > 0;
   const Icon = searching ? SearchX : FolderSearch;
 
@@ -33,7 +34,7 @@ export function EmptyState({ query, onClearSearch }: EmptyStateProps) {
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-        {searching && (
+        {searching && onClearSearch && (
           <button type="button" onClick={onClearSearch} className={buttonStyles({ variant: 'outline' })}>
             Clear search
           </button>
