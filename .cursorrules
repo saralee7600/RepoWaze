@@ -10,11 +10,22 @@
 
 ## 3. Strict Architectural Patterns (The Repeatable Workflow)
 When creating or modifying features/modules, strictly follow this modular pattern for each Entity:
-1. **Shared Interface/DTO:** Define clean, flat interfaces in the `shared/` directory first if it's shared between client and server.
-2. **Database Entity:** Create the TypeORM Entity class in the server with proper relations and cascading rules (e.g., `onDelete: 'CASCADE'`).
-3. **REST API (Controller & Service):** Implement clean controllers and services following NestJS best practices.
-- Do not mix business logic inside controllers; keep it strictly in services.
+- **Shared Interface/DTO:** Define clean, flat interfaces in the `shared/` directory first if it's shared between client and server.
+- **Database Entity:** Create the TypeORM Entity class in the server with proper relations and cascading rules (e.g., `onDelete: 'CASCADE'`).
+- **REST API (Controller & Service):** Implement clean controllers and services following NestJS best practices. Do not mix business logic inside controllers; keep it strictly in services.
 
-## 4. TypeScript & Code Quality
+## 4. Frontend Forms & State Management
+- **ALWAYS** use `react-hook-form` for form state management and handling across all forms.
+- Combine `react-hook-form` with `zod` schema validation via `@hookform/resolvers/zod`. Avoid custom unmanaged form states with bare `useState`.
+
+## 5. UI Components & Styling (shadcn/ui First)
+- Maximize the usage of `shadcn/ui` components (e.g., `Button`, `Card`, `Input`, `Dialog`, `Form`, `Badge`, `Toast`) to ensure a robust, professional look.
+- Minimize raw inline HTML and avoid throwing endless custom Tailwind utility classes directly inside feature views.
+
+## 6. Reusability & Micro-Components
+- Extract repeating patterns (such as cards, metric boxes, status indicators, or custom wrappers) into clean, single-responsibility global components in `components/ui/` or `components/common/`.
+- Avoid monolithic page components that mix raw JSX and business logic together.
+
+## 7. TypeScript & Code Quality
 - Respect the strict TypeScript configuration. Do not bypass type safety with careless 'any' casts unless absolutely necessary and discussed.
 - Keep code clean, modular, and split into clear separate files (avoid giant monolithic files).

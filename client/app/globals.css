@@ -1,11 +1,22 @@
 @import "tailwindcss";
 
 /*
- * shadcn/ui-style design tokens (dark slate theme).
+ * Design tokens.
+ *
+ * Runtime switches live on the <html> element (see lib/appearance.ts):
+ *   html[data-theme="dark|light"]  -> color palette
+ *   html[data-scale="sm|md|lg"]    -> UI scale (root font-size; all rem-based utilities follow)
+ *   html[data-radius="sm|md|lg"]   -> corner radius (--radius)
+ *
+ * The un-attributed `:root` values are the defaults (dark / md / md), so the
+ * UI renders correctly even before the attributes are applied.
  * Hex values are used on purpose so they do not depend on which Tailwind
  * palette variables happen to be emitted.
  */
-:root {
+
+/* ---- Theme: dark (default) ---- */
+:root,
+html[data-theme="dark"] {
   color-scheme: dark;
   --background: #020617; /* slate-950 */
   --foreground: #f8fafc; /* slate-50 */
@@ -21,6 +32,48 @@
   --success: #34d399; /* emerald-400 */
   --warning: #fbbf24; /* amber-400 */
   --destructive: #f87171; /* red-400 */
+}
+
+/* ---- Theme: light ---- */
+html[data-theme="light"] {
+  color-scheme: light;
+  --background: #f8fafc; /* slate-50 */
+  --foreground: #0f172a; /* slate-900 */
+  --card: #ffffff;
+  --muted: #f1f5f9; /* slate-100 */
+  --muted-foreground: #64748b; /* slate-500 */
+  --accent: #eef2f7;
+  --border: #e2e8f0; /* slate-200 */
+  --input: #e2e8f0;
+  --primary: #4f46e5; /* indigo-600 */
+  --primary-foreground: #ffffff;
+  --ring: #6366f1; /* indigo-500 */
+  --success: #059669; /* emerald-600 */
+  --warning: #d97706; /* amber-600 */
+  --destructive: #dc2626; /* red-600 */
+}
+
+/* ---- Radius: base value for the --radius-* scale below ---- */
+:root,
+html[data-radius="md"] {
+  --radius: 0.5rem;
+}
+html[data-radius="sm"] {
+  --radius: 0.25rem;
+}
+html[data-radius="lg"] {
+  --radius: 0.75rem;
+}
+
+/* ---- Scale: rem-based utilities (text, spacing, sizing) follow the root size ---- */
+html {
+  font-size: 100%;
+}
+html[data-scale="sm"] {
+  font-size: 87.5%;
+}
+html[data-scale="lg"] {
+  font-size: 112.5%;
 }
 
 @theme inline {
@@ -40,6 +93,17 @@
   --color-destructive: var(--destructive);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /*
+   * Radius scale derived from --radius. At the default (0.5rem) these equal
+   * Tailwind's stock values (sm 0.25 / md 0.375 / lg 0.5 / xl 0.75 / 2xl 1rem),
+   * so existing `rounded-*` classes look identical until the user changes it.
+   */
+  --radius-sm: calc(var(--radius) - 0.25rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+  --radius-2xl: calc(var(--radius) + 0.5rem);
 }
 
 body {

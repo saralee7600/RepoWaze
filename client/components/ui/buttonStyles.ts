@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'outline' | 'ghost';
-type ButtonSize = 'sm' | 'md';
+type ButtonSize = 'sm' | 'md' | 'icon';
 
 const base =
   'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors ' +
@@ -17,6 +17,7 @@ const variants: Record<ButtonVariant, string> = {
 const sizes: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-xs',
   md: 'h-9 px-4 text-sm',
+  icon: 'size-8',
 };
 
 /** shadcn-style button class builder; works for `<button>` and `<Link>` alike. */

@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Download, Menu } from 'lucide-react';
 import { buttonStyles } from '@/components/ui/buttonStyles';
+import { DisplayOptionsMenu } from './DisplayOptionsMenu';
 import { NAV_ITEMS, isNavItemActive } from './nav-items';
+import { ThemeToggle } from './ThemeToggle';
 
 interface HeaderProps {
   menuOpen: boolean;
@@ -38,6 +40,11 @@ export function Header({ menuOpen, onMenuClick }: HeaderProps) {
             {current.description}
           </p>
         )}
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2">
+        <ThemeToggle />
+        <DisplayOptionsMenu />
       </div>
 
       {!onImportPage && (

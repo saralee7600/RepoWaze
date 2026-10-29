@@ -32,7 +32,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         id="app-sidebar"
         aria-label="Primary"
         className={cn(
-          'fixed inset-y-0 start-0 z-40 flex w-64 shrink-0 flex-col border-e border-border bg-slate-950',
+          'fixed inset-y-0 start-0 z-40 flex w-64 shrink-0 flex-col border-e border-border bg-background',
           'transition-transform duration-200 ease-out',
           'lg:static lg:translate-x-0 lg:rtl:translate-x-0',
           open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full',
