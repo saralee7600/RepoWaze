@@ -90,7 +90,7 @@ export class ProjectsService {
 
   async create(ownerId: string, data: Partial<IProject>) {
     const entity = this.repo.create({
-      ...pickDefined(data, EDITABLE_FIELDS),
+      ...pickDefined(data, EDITABLE_FIELDS as unknown as readonly (keyof typeof data)[]),
       ownerId,
     });
     return this.repo.save(entity);
@@ -98,7 +98,7 @@ export class ProjectsService {
 
   async update(id: number, ownerId: string, data: Partial<IProject>) {
     await this.access.assertOwned(id, ownerId);
-    const changes = pickDefined(data, EDITABLE_FIELDS);
+    const changes = pickDefined(data, EDITABLE_FIELDS as unknown as readonly (keyof typeof data)[]);
     if (Object.keys(changes).length > 0) {
       await this.repo.update({ id, ownerId }, changes);
     }
