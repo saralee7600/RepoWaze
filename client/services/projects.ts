@@ -10,6 +10,9 @@ export const projectsService = {
   getById: (id: number, signal?: AbortSignal) =>
     http.get<ProjectDetails>(`/projects/${id}`, { signal }),
 
+  /** Deletes one of the caller's projects together with its nodes and edges. Rejects with a 404 `ApiError` when it isn't theirs. */
+  remove: (id: number, signal?: AbortSignal) => http.delete(`/projects/${id}`, { signal }),
+
   /** Imports a GitHub repository's TypeORM entities as a project graph. */
   importProject: (payload: IImportProjectRequest, signal?: AbortSignal) =>
     http.post<ImportProjectResponse>('/projects/import', payload, { signal }),

@@ -5,10 +5,18 @@ import { ProjectsController } from './projects.controller';
 import { ProjectEntity } from './project.entity';
 import { GithubService } from './github.service';
 import { EntityParserService } from './entity-parser.service';
+import { ProjectAccessService } from './project-access.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([ProjectEntity])],
-  providers: [ProjectsService, GithubService, EntityParserService],
+  providers: [
+    ProjectsService,
+    GithubService,
+    EntityParserService,
+    ProjectAccessService,
+  ],
   controllers: [ProjectsController],
+  // Nodes and edges ask it whether the caller owns the parent project.
+  exports: [ProjectAccessService],
 })
 export class ProjectsModule {}

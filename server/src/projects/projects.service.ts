@@ -8,6 +8,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import type { IProject, IProjectSummary } from '@repowaze/shared';
+import { pickDefined } from '../common/pick-defined';
+import { ProjectAccessService } from './project-access.service';
 import { ProjectEntity } from './project.entity';
 import { NodeEntity } from '../nodes/node.entity';
 import { EdgeEntity } from '../edges/edge.entity';
@@ -20,6 +22,9 @@ import type { ParsedEntityGraph } from './parsed-entity.types';
 /** Matches the `repo_name` varchar(255) column. */
 const MAX_NAME_LENGTH = 255;
 
+/** Project columns a client may write; `id`, `createdAt` and `ownerId` are server-controlled. */
+const EDITABLE_FIELDS = ['repoUrl', 'repoName'] as const;
+
 @Injectable()
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
@@ -30,14 +35,18 @@ export class ProjectsService {
     private readonly dataSource: DataSource,
     private readonly github: GithubService,
     private readonly parser: EntityParserService,
+    private readonly access: ProjectAccessService,
   ) {}
 
-  /** Every project (newest first) with its node and edge counts, without loading the graph. */
-  async findAll(): Promise<IProjectSummary[]> {
+  /** The owner's projects (newest first) with their node and edge counts, without loading the graph. */
+  async findAll(ownerId: string): Promise<IProjectSummary[]> {
     const [projects, nodeCounts, edgeCounts] = await Promise.all([
-      this.repo.find({ order: { createdAt: 'DESC', id: 'DESC' } }),
-      this.countByProject(NodeEntity, 'node'),
-      this.countByProject(EdgeEntity, 'edge'),
+      this.repo.find({
+        where: { ownerId },
+        order: { createdAt: 'DESC', id: 'DESC' },
+      }),
+      this.countByProject(NodeEntity, 'node', ownerId),
+      this.countByProject(EdgeEntity, 'edge', ownerId),
     ]);
 
     return projects.map((project) => ({
@@ -50,10 +59,10 @@ export class ProjectsService {
     }));
   }
 
-  /** A single project with all of its nodes and edges. Throws 404 when it does not exist. */
-  async findOne(id: number): Promise<ProjectEntity> {
+  /** One of the owner's projects with all of its nodes and edges. Throws 404 when missing or not theirs. */
+  async findOne(id: number, ownerId: string): Promise<ProjectEntity> {
     const project = await this.repo.findOne({
-      where: { id },
+      where: { id, ownerId },
       relations: { nodes: true, edges: true },
       order: { nodes: { id: 'ASC' }, edges: { id: 'ASC' } },
     });
@@ -63,34 +72,48 @@ export class ProjectsService {
     return project;
   }
 
-  /** `projectId -> row count` for a table that has a `projectId` column. */
+  /** `projectId -> row count` for a table that has a `projectId` column, limited to one owner's projects. */
   private async countByProject(
     target: typeof NodeEntity | typeof EdgeEntity,
     alias: string,
+    ownerId: string,
   ): Promise<Map<number, number>> {
     const rows = await this.dataSource
       .getRepository(target)
       .createQueryBuilder(alias)
+      .innerJoin(`${alias}.project`, 'project')
+      .where('project.ownerId = :ownerId', { ownerId })
       .select(`${alias}.projectId`, 'projectId')
       .addSelect('COUNT(*)', 'total')
       .groupBy(`${alias}.projectId`)
       .getRawMany<{ projectId: number | string; total: number | string }>();
 
-    return new Map(rows.map((row) => [Number(row.projectId), Number(row.total)]));
+    return new Map(
+      rows.map((row) => [Number(row.projectId), Number(row.total)]),
+    );
   }
 
-  async create(data: Partial<IProject>) {
-    const entity = this.repo.create(data);
+  async create(ownerId: string, data: Partial<IProject>) {
+    const entity = this.repo.create({
+      ...pickDefined(data, EDITABLE_FIELDS),
+      ownerId,
+    });
     return this.repo.save(entity);
   }
 
-  async update(id: number, data: Partial<IProject>) {
-    await this.repo.update(id, data);
-    return this.repo.findOne({ where: { id } });
+  async update(id: number, ownerId: string, data: Partial<IProject>) {
+    await this.access.assertOwned(id, ownerId);
+    const changes = pickDefined(data, EDITABLE_FIELDS);
+    if (Object.keys(changes).length > 0) {
+      await this.repo.update({ id, ownerId }, changes);
+    }
+    return this.findOne(id, ownerId);
   }
 
-  async delete(id: number) {
-    await this.repo.delete(id);
+  /** Deletes one of the owner's projects; its nodes and edges go with it (`ON DELETE CASCADE`). */
+  async delete(id: number, ownerId: string): Promise<void> {
+    await this.access.assertOwned(id, ownerId);
+    await this.repo.delete({ id, ownerId });
   }
 
   /**
@@ -98,7 +121,10 @@ export class ProjectsService {
    * into a graph of tables and relations, and persists the project together
    * with its nodes and edges. Returns the saved project with `nodes` and `edges`.
    */
-  async importFromGithub(dto: ImportProjectDto): Promise<ProjectEntity> {
+  async importFromGithub(
+    dto: ImportProjectDto,
+    ownerId: string,
+  ): Promise<ProjectEntity> {
     const { repoUrl, name } = this.validateImportRequest(dto);
 
     const ref = this.github.parseRepoUrl(repoUrl);
@@ -116,7 +142,7 @@ export class ProjectsService {
       );
     }
 
-    const projectId = await this.persistGraph(ref, name, graph);
+    const projectId = await this.persistGraph(ref, name, graph, ownerId);
     this.logger.log(
       `Imported ${ref.owner}/${ref.repo} as project ${projectId}: ${graph.nodes.length} node(s), ${graph.edges.length} edge(s)`,
     );
@@ -133,14 +159,18 @@ export class ProjectsService {
     name: string | undefined;
   } {
     if (typeof dto?.repoUrl !== 'string' || dto.repoUrl.trim() === '') {
-      throw new BadRequestException('repoUrl is required and must be a non-empty string');
+      throw new BadRequestException(
+        'repoUrl is required and must be a non-empty string',
+      );
     }
     if (dto.name !== undefined && typeof dto.name !== 'string') {
       throw new BadRequestException('name must be a string');
     }
     const name = dto.name?.trim() || undefined;
     if (name && name.length > MAX_NAME_LENGTH) {
-      throw new BadRequestException(`name must be at most ${MAX_NAME_LENGTH} characters`);
+      throw new BadRequestException(
+        `name must be at most ${MAX_NAME_LENGTH} characters`,
+      );
     }
     return { repoUrl: dto.repoUrl, name };
   }
@@ -155,12 +185,15 @@ export class ProjectsService {
     ref: GithubRepoRef,
     name: string | undefined,
     graph: ParsedEntityGraph,
+    ownerId: string,
   ): Promise<number> {
     return this.dataSource.transaction(async (manager) => {
       const project = await manager.save(
         manager.create(ProjectEntity, {
           repoUrl: `https://github.com/${ref.owner}/${ref.repo}`,
           repoName: name ?? `${ref.owner}/${ref.repo}`,
+          // Importing the same repository twice (even by different users) always yields separate copies.
+          ownerId,
         }),
       );
 

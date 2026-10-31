@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Boxes, CalendarDays, ExternalLink, FolderGit2, Waypoints } from 'lucide-react';
 import { displayUrl, formatDate, formatNumber, pluralize } from '@/lib/format';
 import type { ProjectSummary } from '@/types/api';
+import { DeleteProjectDialog } from './DeleteProjectDialog';
 
 interface ProjectCardProps {
   project: ProjectSummary;
@@ -57,6 +58,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span className="sr-only">(opens in a new tab)</span>
           </a>
         </div>
+
+        <DeleteProjectDialog project={{ id, repoName }} />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

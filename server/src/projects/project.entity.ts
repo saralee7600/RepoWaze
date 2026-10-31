@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -22,6 +23,14 @@ export class ProjectEntity implements IProject {
 
   @CreateDateColumn({name: 'created_at'})
   createdAt: Date;
+
+  /**
+   * Google account id (`sub`) of the user who owns this project. Never selected by default,
+   * so it can't leak into API responses; filter on it explicitly with `where: { ownerId }`.
+   */
+  @Index()
+  @Column({ name: 'owner_id', type: 'varchar', length: 255, select: false })
+  ownerId: string;
 
   @OneToMany(() => NodeEntity, (node) => node.project)
   nodes: NodeEntity[];
