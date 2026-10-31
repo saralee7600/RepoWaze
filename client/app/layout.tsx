@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { AppLayout } from "@/components/layout/AppLayout";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import { APPEARANCE_INIT_SCRIPT, DEFAULT_APPEARANCE } from "@/lib/appearance";
 import "./globals.css";
 
@@ -35,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_INIT_SCRIPT }} />
       </head>
       <body className="h-full">
-        <AppLayout>{children}</AppLayout>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

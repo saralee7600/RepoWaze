@@ -1,3 +1,4 @@
+import { getAccessToken } from '@/lib/auth/token';
 import { API_BASE_URL } from '@/lib/config';
 import type { ApiErrorBody } from '@/types/api';
 
@@ -69,6 +70,8 @@ async function request<TResponse>(
   path: string,
   { body, signal }: RequestOptions = {},
 ): Promise<TResponse> {
+  const accessToken = await getAccessToken();
+
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
@@ -76,6 +79,7 @@ async function request<TResponse>(
       headers: {
         Accept: 'application/json',
         ...(body !== undefined && { 'Content-Type': 'application/json' }),
+        ...(accessToken !== undefined && { Authorization: `Bearer ${accessToken}` }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: 'no-store',

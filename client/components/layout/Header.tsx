@@ -8,6 +8,7 @@ import { buttonStyles } from '@/components/ui/buttonStyles';
 import { DisplayOptionsMenu } from './DisplayOptionsMenu';
 import { NAV_ITEMS, isNavItemActive, type NavItem } from './nav-items';
 import { ThemeToggle } from './ThemeToggle';
+import { UserMenu } from './UserMenu';
 
 interface HeaderProps {
   menuOpen: boolean;
@@ -81,6 +82,8 @@ export function Header({ menuOpen, onMenuClick }: HeaderProps) {
       <Suspense fallback={<ImportLink />}>
         <RouteImportLink />
       </Suspense>
+
+      <UserMenu />
     </header>
   );
 }
