@@ -2,75 +2,57 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* shadcn's `dark:` variant follows this app's own theme switch (html[data-theme]). */
 @custom-variant dark (&:is([data-theme="dark"], [data-theme="dark"] *));
 
-/*
- * Design tokens.
- *
- * Runtime switches live on the <html> element (see lib/appearance.ts):
- *   html[data-theme="dark|light"]  -> color palette
- *   html[data-scale="sm|md|lg"]    -> UI scale (root font-size; all rem-based utilities follow)
- *   html[data-radius="sm|md|lg"]   -> corner radius (--radius)
- *
- * The un-attributed `:root` values are the defaults (dark / md / md), so the
- * UI renders correctly even before the attributes are applied.
- * Hex values are used on purpose so they do not depend on which Tailwind
- * palette variables happen to be emitted.
- */
-
-/* ---- Theme: dark (default) ---- */
 :root,
 html[data-theme="dark"] {
   color-scheme: dark;
-  --background: #020617; /* slate-950 */
-  --foreground: #f8fafc; /* slate-50 */
+  --background: #020617;
+  --foreground: #f8fafc;
   --card: #0b1222;
   --card-foreground: #f8fafc;
   --popover: #0b1222;
   --popover-foreground: #f8fafc;
-  --secondary: #1e293b; /* slate-800 */
+  --secondary: #1e293b;
   --secondary-foreground: #f8fafc;
-  --muted: #1e293b; /* slate-800 */
-  --muted-foreground: #94a3b8; /* slate-400 */
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
   --accent: #172036;
   --accent-foreground: #f8fafc;
-  --border: #1e293b; /* slate-800 */
+  --border: #1e293b;
   --input: #1e293b;
-  --primary: #6366f1; /* indigo-500 */
+  --primary: #6366f1;
   --primary-foreground: #ffffff;
-  --ring: #818cf8; /* indigo-400 */
-  --success: #34d399; /* emerald-400 */
-  --warning: #fbbf24; /* amber-400 */
-  --destructive: #f87171; /* red-400 */
+  --ring: #818cf8;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --destructive: #f87171;
 }
 
-/* ---- Theme: light ---- */
 html[data-theme="light"] {
   color-scheme: light;
-  --background: #f8fafc; /* slate-50 */
-  --foreground: #0f172a; /* slate-900 */
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #ffffff;
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --secondary: #f1f5f9; /* slate-100 */
+  --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
-  --muted: #f1f5f9; /* slate-100 */
-  --muted-foreground: #64748b; /* slate-500 */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
   --accent: #eef2f7;
   --accent-foreground: #0f172a;
-  --border: #e2e8f0; /* slate-200 */
+  --border: #e2e8f0;
   --input: #e2e8f0;
-  --primary: #4f46e5; /* indigo-600 */
+  --primary: #4f46e5;
   --primary-foreground: #ffffff;
-  --ring: #6366f1; /* indigo-500 */
-  --success: #059669; /* emerald-600 */
-  --warning: #d97706; /* amber-600 */
-  --destructive: #dc2626; /* red-600 */
+  --ring: #6366f1;
+  --success: #059669;
+  --warning: #d97706;
+  --destructive: #dc2626;
 }
 
-/* ---- Radius: base value for the --radius-* scale below ---- */
 :root,
 html[data-radius="md"] {
   --radius: 0.5rem;
@@ -82,7 +64,6 @@ html[data-radius="lg"] {
   --radius: 0.75rem;
 }
 
-/* ---- Scale: rem-based utilities (text, spacing, sizing) follow the root size ---- */
 html {
   font-size: 100%;
 }
@@ -118,11 +99,6 @@ html[data-scale="lg"] {
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
 
-  /*
-   * Radius scale derived from --radius. At the default (0.5rem) these equal
-   * Tailwind's stock values (sm 0.25 / md 0.375 / lg 0.5 / xl 0.75 / 2xl 1rem),
-   * so existing `rounded-*` classes look identical until the user changes it.
-   */
   --radius-sm: calc(var(--radius) - 0.25rem);
   --radius-md: calc(var(--radius) - 0.125rem);
   --radius-lg: var(--radius);
@@ -140,7 +116,6 @@ body {
   border-color: var(--border);
 }
 
-/* React Flow (project graph) mapped onto the app's design tokens, so it follows the theme switch. */
 .react-flow {
   --xy-edge-stroke: var(--muted-foreground);
   --xy-edge-stroke-selected: var(--primary);

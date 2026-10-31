@@ -4,7 +4,6 @@ import type { ProjectAccessService } from '../projects/project-access.service';
 import type { NodeEntity } from './node.entity';
 import { NodesService } from './nodes.service';
 
-// `@nestjs/typeorm` is ESM-only; see the stub for details.
 jest.mock('@nestjs/typeorm', () =>
   jest.requireActual<typeof import('../testing/nestjs-typeorm.stub')>(
     '../testing/nestjs-typeorm.stub',

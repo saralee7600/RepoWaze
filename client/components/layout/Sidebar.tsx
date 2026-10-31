@@ -9,13 +9,11 @@ import { ApiStatusIndicator } from './ApiStatusIndicator';
 import { NAV_ITEMS, isNavItemActive } from './nav-items';
 
 interface SidebarProps {
-  /** Mobile drawer state; ignored on `lg` and up where the sidebar is static. */
   open: boolean;
   onClose: () => void;
 }
 
 interface NavLinksProps {
-  /** Current route; `null` while it isn't known yet (nothing is highlighted). */
   pathname: string | null;
   onNavigate: () => void;
 }
@@ -57,7 +55,6 @@ function RouteNavLinks({ onNavigate }: Pick<NavLinksProps, 'onNavigate'>) {
 export function Sidebar({ open, onClose }: SidebarProps) {
   return (
     <>
-      {/* Mobile backdrop */}
       <div
         aria-hidden="true"
         onClick={onClose}
@@ -100,7 +97,6 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <p className="px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">
             Workspace
           </p>
-          {/* The active item needs the pathname, which isn't known while prerendering dynamic routes. */}
           <Suspense fallback={<NavLinks pathname={null} onNavigate={onClose} />}>
             <RouteNavLinks onNavigate={onClose} />
           </Suspense>

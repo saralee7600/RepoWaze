@@ -19,10 +19,8 @@ import { ImportProjectDto } from './dto/import-project.dto';
 import type { GithubRepoRef } from './github.types';
 import type { ParsedEntityGraph } from './parsed-entity.types';
 
-/** Matches the `repo_name` varchar(255) column. */
 const MAX_NAME_LENGTH = 255;
 
-/** Project columns a client may write; `id`, `createdAt` and `ownerId` are server-controlled. */
 const EDITABLE_FIELDS = ['repoUrl', 'repoName'] as const;
 
 @Injectable()
@@ -38,7 +36,6 @@ export class ProjectsService {
     private readonly access: ProjectAccessService,
   ) {}
 
-  /** The owner's projects (newest first) with their node and edge counts, without loading the graph. */
   async findAll(ownerId: string): Promise<IProjectSummary[]> {
     const [projects, nodeCounts, edgeCounts] = await Promise.all([
       this.repo.find({
@@ -59,7 +56,6 @@ export class ProjectsService {
     }));
   }
 
-  /** One of the owner's projects with all of its nodes and edges. Throws 404 when missing or not theirs. */
   async findOne(id: number, ownerId: string): Promise<ProjectEntity> {
     const project = await this.repo.findOne({
       where: { id, ownerId },
@@ -72,7 +68,6 @@ export class ProjectsService {
     return project;
   }
 
-  /** `projectId -> row count` for a table that has a `projectId` column, limited to one owner's projects. */
   private async countByProject(
     target: typeof NodeEntity | typeof EdgeEntity,
     alias: string,
@@ -110,17 +105,11 @@ export class ProjectsService {
     return this.findOne(id, ownerId);
   }
 
-  /** Deletes one of the owner's projects; its nodes and edges go with it (`ON DELETE CASCADE`). */
   async delete(id: number, ownerId: string): Promise<void> {
     await this.access.assertOwned(id, ownerId);
     await this.repo.delete({ id, ownerId });
   }
 
-  /**
-   * Imports a GitHub repository: downloads its `*.entity.ts` files, parses them
-   * into a graph of tables and relations, and persists the project together
-   * with its nodes and edges. Returns the saved project with `nodes` and `edges`.
-   */
   async importFromGithub(
     dto: ImportProjectDto,
     ownerId: string,
@@ -175,12 +164,6 @@ export class ProjectsService {
     return { repoUrl: dto.repoUrl, name };
   }
 
-  /**
-   * Saves the project, then its nodes, then its edges inside one transaction,
-   * so a failure never leaves a half-imported graph behind. Edges reference
-   * nodes by the database ids generated when the nodes were saved.
-   * Returns the new project's id.
-   */
   private async persistGraph(
     ref: GithubRepoRef,
     name: string | undefined,
@@ -192,7 +175,6 @@ export class ProjectsService {
         manager.create(ProjectEntity, {
           repoUrl: `https://github.com/${ref.owner}/${ref.repo}`,
           repoName: name ?? `${ref.owner}/${ref.repo}`,
-          // Importing the same repository twice (even by different users) always yields separate copies.
           ownerId,
         }),
       );
@@ -216,7 +198,6 @@ export class ProjectsService {
       const edges = graph.edges.flatMap((edge) => {
         const sourceNodeId = nodeIdByClass.get(edge.sourceClass);
         const targetNodeId = nodeIdByClass.get(edge.targetClass);
-        // The parser only emits edges between known classes; guard anyway.
         if (sourceNodeId === undefined || targetNodeId === undefined) return [];
 
         return manager.create(EdgeEntity, {

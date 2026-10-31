@@ -16,7 +16,6 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { ImportProjectDto } from './dto/import-project.dto';
 
-/** Every route acts on the signed-in user's own projects only. */
 @Controller('projects')
 export class ProjectsController {
   constructor(private readonly service: ProjectsService) {}
@@ -34,7 +33,6 @@ export class ProjectsController {
     return this.service.findOne(id, user.id);
   }
 
-  /** Imports a GitHub repository's TypeORM entities as a project graph owned by the caller. */
   @Post('import')
   importFromGithub(
     @Body() body: ImportProjectDto,

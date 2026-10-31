@@ -3,10 +3,6 @@ import { getToken } from 'next-auth/jwt';
 import { safeCallbackUrl } from '@/lib/auth/callback-url';
 import { LOGIN_PATH } from '@/lib/auth/paths';
 
-/**
- * Route guard (the Next.js 16 successor of `middleware.ts`):
- * signed-out visitors are sent to `/login`, signed-in ones are kept away from it.
- */
 export async function proxy(request: NextRequest) {
   const { nextUrl } = request;
   const token = await getToken({ req: request });
@@ -26,6 +22,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except NextAuth's own endpoints and Next.js static assets.
   matcher: ['/((?!api/auth|_next/static|_next/image|favicon.ico).*)'],
 };

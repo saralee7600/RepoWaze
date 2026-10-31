@@ -23,7 +23,6 @@ interface DeleteProjectDialogProps {
   project: Pick<ProjectSummary, 'id' | 'repoName'>;
 }
 
-/** Trash button on a project card that asks for confirmation, deletes the project, then refreshes the list. */
 export function DeleteProjectDialog({ project }: DeleteProjectDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -44,14 +43,12 @@ export function DeleteProjectDialog({ project }: DeleteProjectDialogProps) {
     toast.success(`Deleted ${project.repoName}`);
     setIsDeleting(false);
     setOpen(false);
-    // The dashboard list is rendered on the server; re-render it so the card disappears.
     startRefresh(() => router.refresh());
   };
 
   return (
     <AlertDialog open={open} onOpenChange={(next) => !isBusy && setOpen(next)}>
       <AlertDialogTrigger asChild>
-        {/* `relative z-10` lifts the button above the card's stretched link. */}
         <Button
           type="button"
           variant="ghost"
@@ -75,7 +72,6 @@ export function DeleteProjectDialog({ project }: DeleteProjectDialogProps) {
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
-          {/* A plain Button (not AlertDialogAction) so the dialog stays open until the request settles. */}
           <Button type="button" variant="destructive" onClick={handleDelete} disabled={isBusy}>
             {isBusy ? (
               <Loader2 className="animate-spin" aria-hidden="true" />

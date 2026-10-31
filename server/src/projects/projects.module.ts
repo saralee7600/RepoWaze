@@ -16,7 +16,6 @@ import { ProjectAccessService } from './project-access.service';
     ProjectAccessService,
   ],
   controllers: [ProjectsController],
-  // Nodes and edges ask it whether the caller owns the parent project.
   exports: [ProjectAccessService],
 })
 export class ProjectsModule {}

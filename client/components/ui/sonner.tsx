@@ -5,7 +5,6 @@ import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon
 import { useAppearance } from "@/hooks/useAppearance"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // The app owns its theme (html[data-theme], see lib/appearance.ts), so no `next-themes`.
   const {
     appearance: { theme },
   } = useAppearance()

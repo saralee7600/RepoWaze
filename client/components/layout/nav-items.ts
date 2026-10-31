@@ -5,7 +5,6 @@ export interface NavItem {
   label: string;
   description: string;
   icon: LucideIcon;
-  /** Extra route prefixes that keep this item highlighted (e.g. its detail pages). */
   alsoActiveFor?: readonly string[];
 }
 
@@ -25,7 +24,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
   },
 ];
 
-/** Exact match for the root route, prefix match for everything else. */
 export function isNavItemActive(item: NavItem, pathname: string): boolean {
   const matches = (prefix: string) => pathname === prefix || pathname.startsWith(`${prefix}/`);
   if (item.alsoActiveFor?.some(matches)) return true;

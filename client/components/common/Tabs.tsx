@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/tabs';
 
 export interface TabItem {
-  /** Stable identifier; also the value written to the URL when synced. */
   value: string;
   label: string;
   content: ReactNode;
@@ -21,15 +20,8 @@ export interface TabItem {
 
 export interface TabsProps {
   items: readonly TabItem[];
-  /** Initially active tab. Defaults to the first enabled item. */
   defaultValue?: string;
-  /**
-   * Name of the query parameter that mirrors the active tab (e.g. `"tab"` -> `?tab=entities`).
-   * Omit it to keep the active tab in local state only. When used, render the
-   * component inside a `<Suspense>` boundary (it reads `useSearchParams`).
-   */
   urlParam?: string;
-  /** Accessible name of the tab list. */
   label?: string;
   className?: string;
 }
@@ -48,7 +40,6 @@ interface TabsViewProps extends Pick<TabsProps, 'items' | 'label' | 'className'>
   onValueChange: (value: string) => void;
 }
 
-/** Presentational tabs shared by the local and URL-synced variants. */
 function TabsView({ items, value, onValueChange, label, className }: TabsViewProps) {
   return (
     <TabsRoot value={value} onValueChange={onValueChange} className={className}>
@@ -81,7 +72,6 @@ function UrlSyncedTabs({ items, defaultValue, urlParam, ...rest }: TabsProps & {
 
   const fallback = resolveFallback(items, defaultValue);
   const requested = searchParams.get(urlParam);
-  // An unknown or disabled `?tab=` value quietly falls back to the default tab.
   const value = isSelectable(items, requested) ? requested : fallback;
 
   const handleChange = useCallback(
@@ -91,7 +81,6 @@ function UrlSyncedTabs({ items, defaultValue, urlParam, ...rest }: TabsProps & {
       else params.set(urlParam, next);
 
       const query = params.toString();
-      // Native history API: Next.js syncs it with `useSearchParams` without a server round trip.
       window.history.replaceState(null, '', query === '' ? pathname : `${pathname}?${query}`);
     },
     [fallback, pathname, urlParam],
@@ -100,10 +89,6 @@ function UrlSyncedTabs({ items, defaultValue, urlParam, ...rest }: TabsProps & {
   return <TabsView items={items} value={value} onValueChange={handleChange} {...rest} />;
 }
 
-/**
- * Reusable tabs driven by a plain config array. Pass `urlParam` to keep the
- * active tab in the URL so it survives reloads and can be shared as a link.
- */
 export function Tabs({ urlParam, ...props }: TabsProps) {
   return urlParam ? <UrlSyncedTabs urlParam={urlParam} {...props} /> : <LocalTabs {...props} />;
 }

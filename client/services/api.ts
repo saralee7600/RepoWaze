@@ -2,13 +2,10 @@ import { getAccessToken } from '@/lib/auth/token';
 import { API_BASE_URL } from '@/lib/config';
 import type { ApiErrorBody } from '@/types/api';
 
-/** `status` used for failures that never produced an HTTP response. */
 export const NETWORK_ERROR_STATUS = 0;
 
-/** Error thrown for every failed backend request (HTTP error or network failure). */
 export class ApiError extends Error {
   readonly status: number;
-  /** Individual messages when the server reported several (e.g. validation). */
   readonly details: readonly string[];
 
   constructor(status: number, message: string, details: readonly string[] = []) {
@@ -27,7 +24,6 @@ export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
 
-/** Message safe to show to a user for any thrown value. */
 export function getErrorMessage(error: unknown): string {
   if (isApiError(error)) return error.message;
   if (error instanceof Error && error.message !== '') return error.message;
@@ -35,7 +31,6 @@ export function getErrorMessage(error: unknown): string {
 }
 
 interface RequestOptions {
-  /** JSON-serialisable request body. */
   body?: unknown;
   signal?: AbortSignal;
 }
@@ -98,7 +93,6 @@ async function request<TResponse>(
   return data as TResponse;
 }
 
-/** Centralised, typed HTTP client for the NestJS backend. */
 export const http = {
   get: <TResponse>(path: string, options?: Omit<RequestOptions, 'body'>) =>
     request<TResponse>('GET', path, options),

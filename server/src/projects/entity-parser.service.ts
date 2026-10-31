@@ -26,7 +26,6 @@ import {
   type DecoratorInfo,
 } from './entity-ast.helpers';
 
-/** Relation decorator name -> relation kind. */
 const RELATION_DECORATORS: Readonly<Record<string, RelationKind>> = {
   OneToOne: 'one-to-one',
   OneToMany: 'one-to-many',
@@ -34,7 +33,6 @@ const RELATION_DECORATORS: Readonly<Record<string, RelationKind>> = {
   ManyToMany: 'many-to-many',
 };
 
-/** Column decorators and the database type they imply when none is given. */
 const COLUMN_DECORATORS: Readonly<Record<string, string | null>> = {
   Column: null,
   PrimaryColumn: null,
@@ -47,7 +45,6 @@ const COLUMN_DECORATORS: Readonly<Record<string, string | null>> = {
 
 const PRIMARY_DECORATORS = new Set(['PrimaryColumn', 'PrimaryGeneratedColumn']);
 
-/** TypeORM's reflect-metadata defaults, for `@Column()` without an explicit type. */
 const TS_TO_DB_TYPE: Readonly<Record<string, string>> = {
   string: 'varchar',
   number: 'int',
@@ -55,7 +52,6 @@ const TS_TO_DB_TYPE: Readonly<Record<string, string>> = {
   Date: 'datetime',
 };
 
-/** JS constructors that may be passed as a column type, e.g. `@Column(String)`. */
 const CONSTRUCTOR_TO_DB_TYPE: Readonly<Record<string, string>> = {
   String: 'varchar',
   Number: 'int',
@@ -63,21 +59,15 @@ const CONSTRUCTOR_TO_DB_TYPE: Readonly<Record<string, string>> = {
   Date: 'datetime',
 };
 
-/** Everything extracted from a single `@Entity()` class. */
 interface ParsedClass {
   node: ParsedNode;
   relations: RawRelation[];
 }
 
-/**
- * Statically analyses TypeORM entity source code with the TypeScript compiler
- * API (no code is executed) and builds a graph of tables and relations.
- */
 @Injectable()
 export class EntityParserService {
   private readonly logger = new Logger(EntityParserService.name);
 
-  /** Parses all files and returns the resulting nodes (tables) and edges (relations). */
   parse(files: readonly RepositoryFile[]): ParsedEntityGraph {
     const nodes = new Map<string, ParsedNode>();
     const relations: RawRelation[] = [];
@@ -102,25 +92,33 @@ export class EntityParserService {
     };
   }
 
-  /** Extracts every `@Entity()` class of a single file. */
   private parseFile(file: RepositoryFile): ParsedClass[] {
     const sourceFile = ts.createSourceFile(
       file.path,
       file.content,
       ts.ScriptTarget.Latest,
-      /* setParentNodes */ true,
+      true,
       ts.ScriptKind.TS,
     );
 
     const result: ParsedClass[] = [];
-    // Entities are declared at the top level; nested classes are not entities.
     for (const statement of sourceFile.statements) {
       if (!ts.isClassDeclaration(statement) || !statement.name) continue;
 
-      const entityDecorator = getDecorators(statement).find((d) => d.name === 'Entity');
+      const entityDecorator = getDecorators(statement).find(
+        (d) => d.name === 'Entity',
+      );
       if (!entityDecorator) continue;
 
-      result.push(this.parseClass(statement, statement.name.text, entityDecorator, file, sourceFile));
+      result.push(
+        this.parseClass(
+          statement,
+          statement.name.text,
+          entityDecorator,
+          file,
+          sourceFile,
+        ),
+      );
     }
     return result;
   }
@@ -138,15 +136,24 @@ export class EntityParserService {
 
     for (const member of declaration.members) {
       if (!ts.isPropertyDeclaration(member)) continue;
-      if (!ts.isIdentifier(member.name) && !ts.isStringLiteral(member.name)) continue;
+      if (!ts.isIdentifier(member.name) && !ts.isStringLiteral(member.name))
+        continue;
 
       const propertyName = member.name.text;
       const decorators = getDecorators(member);
       const tsType = member.type ? member.type.getText(sourceFile) : null;
 
-      const relationDecorator = decorators.find((d) => d.name in RELATION_DECORATORS);
+      const relationDecorator = decorators.find(
+        (d) => d.name in RELATION_DECORATORS,
+      );
       if (relationDecorator) {
-        const relation = this.parseRelation(className, propertyName, relationDecorator, decorators, tsType);
+        const relation = this.parseRelation(
+          className,
+          propertyName,
+          relationDecorator,
+          decorators,
+          tsType,
+        );
         if (relation) {
           relations.push(relation);
           declaredRelations.push({
@@ -156,14 +163,20 @@ export class EntityParserService {
             inverseProperty: relation.inverseProperty,
           });
         } else {
-          this.logger.warn(`Could not resolve relation target of ${className}.${propertyName} (${file.path})`);
+          this.logger.warn(
+            `Could not resolve relation target of ${className}.${propertyName} (${file.path})`,
+          );
         }
         continue;
       }
 
-      const columnDecorator = decorators.find((d) => d.name in COLUMN_DECORATORS);
+      const columnDecorator = decorators.find(
+        (d) => d.name in COLUMN_DECORATORS,
+      );
       if (columnDecorator) {
-        columns.push(this.parseColumn(propertyName, columnDecorator, tsType, sourceFile));
+        columns.push(
+          this.parseColumn(propertyName, columnDecorator, tsType, sourceFile),
+        );
       }
     }
 
@@ -181,7 +194,6 @@ export class EntityParserService {
     };
   }
 
-  /** `@Entity('users')`, `@Entity({ name: 'users' })`, or the default snake_case class name. */
   private readTableName(decorator: DecoratorInfo, className: string): string {
     const explicit =
       readString(decorator.args[0]) ??
@@ -198,10 +210,10 @@ export class EntityParserService {
     const options = findOptionsObject(decorator.args);
     const isGenerated = decorator.name === 'PrimaryGeneratedColumn';
 
-    // `@Column('varchar')` / `@PrimaryGeneratedColumn('uuid')` pass the type or
-    // strategy as the first argument; otherwise it lives in the options object.
     const firstArg = decorator.args[0];
-    const typeExpression = getOption(options, 'type') ?? (firstArg === options ? undefined : firstArg);
+    const typeExpression =
+      getOption(options, 'type') ??
+      (firstArg === options ? undefined : firstArg);
     const explicitType = readTypeExpression(typeExpression, sourceFile);
 
     return {
@@ -209,7 +221,9 @@ export class EntityParserService {
       columnName: readString(getOption(options, 'name')) ?? propertyName,
       type: this.resolveColumnType(decorator.name, explicitType, tsType),
       tsType,
-      nullable: readBoolean(getOption(options, 'nullable')) ?? this.isNullableType(tsType),
+      nullable:
+        readBoolean(getOption(options, 'nullable')) ??
+        this.isNullableType(tsType),
       primary:
         PRIMARY_DECORATORS.has(decorator.name) ||
         readBoolean(getOption(options, 'primary')) === true,
@@ -222,12 +236,12 @@ export class EntityParserService {
     explicitType: string | null,
     tsType: string | null,
   ): string {
-    // The first argument of @PrimaryGeneratedColumn is a strategy, not a column type.
     if (decoratorName === 'PrimaryGeneratedColumn') {
-      return explicitType === 'uuid' || explicitType === 'rowid' ? 'uuid' : (explicitType ?? 'int');
+      return explicitType === 'uuid' || explicitType === 'rowid'
+        ? 'uuid'
+        : (explicitType ?? 'int');
     }
     if (explicitType) {
-      // `@Column(String)` / `@Column({ type: Number })` pass a JS constructor.
       return CONSTRUCTOR_TO_DB_TYPE[explicitType] ?? explicitType;
     }
     const implied = COLUMN_DECORATORS[decoratorName];
@@ -249,38 +263,34 @@ export class EntityParserService {
     tsType: string | null,
   ): RawRelation | null {
     const relationType = RELATION_DECORATORS[decorator.name];
-    // Prefer the explicit `() => Target`; fall back to the property's type annotation.
     const targetClass =
       readRelationTarget(decorator.args[0]) ?? unwrapEntityTypeName(tsType);
     if (!targetClass) return null;
 
-    const hasJoin = allDecorators.some((d) => d.name === 'JoinColumn' || d.name === 'JoinTable');
+    const hasJoin = allDecorators.some(
+      (d) => d.name === 'JoinColumn' || d.name === 'JoinTable',
+    );
     return {
       sourceClass,
       targetClass,
       propertyName,
       inverseProperty: readInverseProperty(decorator.args[1]),
       relationType,
-      // A ManyToOne always stores the foreign key; the other kinds need an explicit join.
       isOwningSide: relationType === 'many-to-one' || hasJoin,
     };
   }
 
-  /**
-   * Resolves relations against the known entities and collapses the two
-   * declarations of a bidirectional relation (e.g. `User.posts` OneToMany and
-   * `Post.author` ManyToOne) into a single edge, keeping the owning side.
-   */
   private buildEdges(
     relations: readonly RawRelation[],
     nodes: ReadonlyMap<string, ParsedNode>,
   ): ParsedEdge[] {
-    // "Target.inverse" -> "Source.property": lets a side without an explicit
-    // inverse find the opposite side that points at it.
     const claimedBy = new Map<string, string>();
     for (const r of relations) {
       if (r.inverseProperty) {
-        claimedBy.set(`${r.targetClass}.${r.inverseProperty}`, `${r.sourceClass}.${r.propertyName}`);
+        claimedBy.set(
+          `${r.targetClass}.${r.inverseProperty}`,
+          `${r.sourceClass}.${r.propertyName}`,
+        );
       }
     }
 

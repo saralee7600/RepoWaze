@@ -1,4 +1,3 @@
-/** Google "G" mark (lucide ships no brand icons). */
 export function GoogleIcon(props: React.ComponentProps<'svg'>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>

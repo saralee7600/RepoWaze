@@ -16,7 +16,6 @@ export function GoogleSignInButton({ callbackUrl, disabled = false }: GoogleSign
 
   const handleClick = () => {
     setIsRedirecting(true);
-    // Leaves the app for Google's consent screen; the page unloads, so there is no state to reset.
     void signIn('google', { callbackUrl });
   };
 

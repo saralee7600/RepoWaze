@@ -20,7 +20,6 @@ export function ProjectHeader({ repoName, repoUrl, createdAt, nodeCount, edgeCou
       </Link>
 
       <div className="space-y-2">
-        {/* The app header already provides the page's <h1>. */}
         <h2 className="truncate text-2xl font-semibold tracking-tight text-foreground" title={repoName}>
           {repoName}
         </h2>

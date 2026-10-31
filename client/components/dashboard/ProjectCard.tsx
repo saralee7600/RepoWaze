@@ -37,7 +37,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-sm font-semibold tracking-tight text-foreground" title={repoName}>
-            {/* Stretched link: the pseudo-element makes the whole card clickable. */}
             <Link
               href={`/projects/${id}`}
               className="rounded-sm after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"

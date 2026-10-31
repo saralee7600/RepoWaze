@@ -18,7 +18,6 @@ const RADIUS_OPTIONS = [
   { value: 'lg', label: 'Round' },
 ] as const;
 
-/** Popover with UI scale and corner-radius controls (`data-scale`, `data-radius`). */
 export function DisplayOptionsMenu() {
   const { appearance, update } = useAppearance();
   const [open, setOpen] = useState(false);

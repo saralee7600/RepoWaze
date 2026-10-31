@@ -22,7 +22,6 @@ import { EdgeEntity } from './edges/edge.entity';
         password: config.get<string>('DB_PASS'),
         database: config.get<string>('DB_NAME'),
         entities: [ProjectEntity, NodeEntity, EdgeEntity],
-        // Development only: auto-creates/updates tables from the entities.
         synchronize: true,
       }),
     }),

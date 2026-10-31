@@ -15,7 +15,6 @@ function getInitials(name: string): string {
   return letters.join('') || '?';
 }
 
-/** Signed-in user's identity plus a sign-out action, driven by the NextAuth session. */
 export function UserMenu() {
   const { data: session, status } = useSession();
 

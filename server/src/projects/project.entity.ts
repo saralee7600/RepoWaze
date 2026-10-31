@@ -12,22 +12,18 @@ import { EdgeEntity } from '../edges/edge.entity';
 
 @Entity('projects')
 export class ProjectEntity implements IProject {
-  @PrimaryGeneratedColumn({name: 'id'})
+  @PrimaryGeneratedColumn({ name: 'id' })
   id: number;
 
-  @Column({name: 'repo_url'})
+  @Column({ name: 'repo_url' })
   repoUrl: string;
 
-  @Column({name: 'repo_name'})
+  @Column({ name: 'repo_name' })
   repoName: string;
 
-  @CreateDateColumn({name: 'created_at'})
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  /**
-   * Google account id (`sub`) of the user who owns this project. Never selected by default,
-   * so it can't leak into API responses; filter on it explicitly with `where: { ownerId }`.
-   */
   @Index()
   @Column({ name: 'owner_id', type: 'varchar', length: 255, select: false })
   ownerId: string;

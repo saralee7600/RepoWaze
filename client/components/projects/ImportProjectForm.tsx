@@ -43,7 +43,6 @@ export function ImportProjectForm() {
     mode: 'onTouched',
   });
 
-  // `isSubmitSuccessful` keeps the form locked while the redirect to the dashboard happens.
   const isBusy = isSubmitting || isSubmitSuccessful;
   const serverError = errors.root?.server?.message;
 
@@ -62,7 +61,6 @@ export function ImportProjectForm() {
 
   return (
     <Card className="mx-auto w-full max-w-xl">
-      {/* `contents` keeps CardHeader/Content/Footer as direct flex children of the Card. */}
       <form onSubmit={handleSubmit(onSubmit)} noValidate aria-busy={isBusy} className="contents">
         <CardHeader>
           <CardTitle>Import a GitHub repository</CardTitle>

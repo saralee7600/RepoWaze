@@ -8,13 +8,6 @@ export type ApiStatus = 'checking' | 'connected' | 'disconnected';
 const POLL_INTERVAL_MS = 15_000;
 const REQUEST_TIMEOUT_MS = 4_000;
 
-/**
- * Polls the API and reports whether it is reachable.
- *
- * `no-cors` is used on purpose: the server does not enable CORS, and we only
- * care whether a response arrives at all (an opaque response still resolves,
- * a network failure or timeout rejects).
- */
 export function useApiStatus(): ApiStatus {
   const [status, setStatus] = useState<ApiStatus>('checking');
 

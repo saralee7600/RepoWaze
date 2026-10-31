@@ -11,7 +11,6 @@ import { NodeEntity } from '../nodes/node.entity';
 import { ProjectAccessService } from '../projects/project-access.service';
 import { EdgeEntity } from './edge.entity';
 
-/** Edge columns a client may write; `id` is server-controlled. */
 const EDITABLE_FIELDS = [
   'projectId',
   'sourceNodeId',
@@ -20,7 +19,6 @@ const EDITABLE_FIELDS = [
   'label',
 ] as const;
 
-/** Every method is scoped to edges whose parent project belongs to `ownerId`. */
 @Injectable()
 export class EdgesService {
   constructor(
@@ -97,7 +95,6 @@ export class EdgesService {
     return edge;
   }
 
-  /** An edge may only connect nodes of its own project, never ones from another user's graph. */
   private async assertNodesInProject(
     projectId: number,
     nodeIds: number[],

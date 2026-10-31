@@ -5,7 +5,6 @@ import type { ProjectAccessService } from './project-access.service';
 import type { ProjectEntity } from './project.entity';
 import { ProjectsService } from './projects.service';
 
-// `@nestjs/typeorm` and `@nestjs/config` (pulled in by GithubService) are ESM-only, which jest can't load.
 jest.mock('@nestjs/typeorm', () =>
   jest.requireActual<typeof import('../testing/nestjs-typeorm.stub')>(
     '../testing/nestjs-typeorm.stub',

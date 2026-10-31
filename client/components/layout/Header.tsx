@@ -40,7 +40,6 @@ function ImportLink() {
   );
 }
 
-/** Nav item matching the current route. Needs the pathname, which isn't known while prerendering dynamic routes. */
 function useCurrentNavItem(): NavItem | undefined {
   const pathname = usePathname();
   return NAV_ITEMS.find((item) => isNavItemActive(item, pathname));

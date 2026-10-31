@@ -8,7 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage({ searchParams }: PageProps<'/login'>) {
-  // `searchParams` is passed down unresolved so the card shell prerenders.
   return (
     <Suspense fallback={<LoginCard callbackUrl="/" disabled />}>
       <LoginContent searchParams={searchParams} />

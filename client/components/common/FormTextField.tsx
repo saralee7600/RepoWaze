@@ -13,7 +13,6 @@ interface FormTextFieldProps<TValues extends FieldValues>
   description?: string;
 }
 
-/** shadcn `Field` + `Input` bound to a react-hook-form controller, with label, hint and error. */
 export function FormTextField<TValues extends FieldValues>({
   control,
   name,

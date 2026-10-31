@@ -9,10 +9,8 @@ import type {
 import { GoogleJwksService } from './google-jwks.service';
 
 const GOOGLE_ISSUERS = ['https://accounts.google.com', 'accounts.google.com'];
-/** Tolerated difference between this server's clock and Google's. */
 const CLOCK_SKEW_SECONDS = 30;
 
-/** Validates Google-issued ID tokens (RS256 JWTs) without any third-party dependency. */
 @Injectable()
 export class GoogleTokenVerifierService {
   constructor(
@@ -79,7 +77,7 @@ function decodeSegment<T extends object>(segment: string): T {
     );
     if (typeof value === 'object' && value !== null) return value as T;
   } catch {
-    // fall through to the rejection below
+    throw invalidToken();
   }
   throw invalidToken();
 }
@@ -88,7 +86,6 @@ function asOptionalString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-/** One generic message for every failure, so callers learn nothing about why a token was refused. */
 function invalidToken(): UnauthorizedException {
   return new UnauthorizedException('Invalid or expired token');
 }

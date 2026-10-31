@@ -3,9 +3,7 @@ import { Download, FolderSearch, SearchX } from 'lucide-react';
 import { buttonStyles } from '@/components/ui/buttonStyles';
 
 interface EmptyStateProps {
-  /** Active search text. When set, the state explains that nothing matched. */
   query?: string;
-  /** Resets the search; the "Clear search" button only shows while searching. */
   onClearSearch?: () => void;
 }
 

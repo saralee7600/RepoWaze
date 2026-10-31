@@ -39,7 +39,6 @@ export function DashboardView({ projects }: DashboardViewProps) {
 
   const isFiltering = query.trim() !== '';
 
-  // Nothing imported yet: skip the zeroed metrics and search, and point straight at the importer.
   if (projects.length === 0) return <EmptyState />;
 
   return (

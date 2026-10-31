@@ -9,7 +9,6 @@ import { GoogleTokenVerifierService } from './google-token-verifier.service';
 
 const BEARER_PREFIX = 'Bearer ';
 
-/** Rejects (401) every request that doesn't carry a valid Google ID token as a Bearer token. */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly verifier: GoogleTokenVerifierService) {}

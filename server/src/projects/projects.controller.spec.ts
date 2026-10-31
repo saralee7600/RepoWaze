@@ -8,7 +8,6 @@ import { GoogleTokenVerifierService } from '../auth/google-token-verifier.servic
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 
-// `@nestjs/typeorm` and `@nestjs/config` (pulled in by the service graph) are ESM-only.
 jest.mock('@nestjs/typeorm', () =>
   jest.requireActual<typeof import('../testing/nestjs-typeorm.stub')>(
     '../testing/nestjs-typeorm.stub',

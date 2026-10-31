@@ -4,7 +4,6 @@ import { projectsService } from '@/services/projects';
 import type { ProjectSummary } from '@/types/api';
 import { DashboardView } from './DashboardView';
 
-/** Server component: loads the projects from the API on every request. */
 export async function DashboardContent() {
   let projects: ProjectSummary[];
   try {

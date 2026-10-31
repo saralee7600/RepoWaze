@@ -7,14 +7,12 @@ import { createPublicKey, type JsonWebKey, type KeyObject } from 'node:crypto';
 
 const GOOGLE_JWKS_URL = 'https://www.googleapis.com/oauth2/v3/certs';
 const DEFAULT_TTL_MS = 60 * 60 * 1000;
-/** An unknown `kid` may mean Google rotated keys, but must not let callers force a fetch per request. */
 const MIN_REFETCH_INTERVAL_MS = 60 * 1000;
 
 interface JwksResponse {
   keys?: (JsonWebKey & { kid?: string })[];
 }
 
-/** Google's public signing keys, cached for as long as Google allows. */
 @Injectable()
 export class GoogleJwksService {
   private readonly logger = new Logger(GoogleJwksService.name);
@@ -61,7 +59,6 @@ export class GoogleJwksService {
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
       this.logger.error(`Could not load Google signing keys: ${reason}`);
-      // Keep serving previously fetched keys; only fail when there is nothing to verify against.
       if (this.keys.size === 0) {
         throw new ServiceUnavailableException(
           'Unable to verify credentials right now',

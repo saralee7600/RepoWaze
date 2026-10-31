@@ -10,11 +10,6 @@ import {
   type Appearance,
 } from '@/lib/appearance';
 
-/*
- * Tiny external store shared by every component that uses `useAppearance`.
- * Source of truth: localStorage (read lazily on the client). The <html>
- * attributes are always derived from it.
- */
 const listeners = new Set<() => void>();
 let current: Appearance | null = null;
 
@@ -34,7 +29,6 @@ function getServerSnapshot(): Appearance {
 function subscribe(listener: () => void): () => void {
   listeners.add(listener);
 
-  // Keep other open tabs in sync.
   const onStorage = (event: StorageEvent) => {
     if (event.key !== null && event.key !== APPEARANCE_STORAGE_KEY) return;
     current = readStoredAppearance();
@@ -56,8 +50,8 @@ function updateAppearance(patch: Partial<Appearance>): void {
     return;
   }
   current = next;
-  applyAppearance(next); // Instant DOM update.
-  writeStoredAppearance(next); // Persist.
+  applyAppearance(next);
+  writeStoredAppearance(next);
   emit();
 }
 
@@ -67,9 +61,6 @@ export function useAppearance(): {
 } {
   const appearance = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-  // The inline <head> script already applies the stored values on a full load.
-  // In dev, React Strict Mode's remount resets <html> attributes to the ones
-  // declared in JSX, so re-apply before paint (no-op in production).
   useLayoutEffect(() => {
     applyAppearance(getSnapshot());
   }, []);

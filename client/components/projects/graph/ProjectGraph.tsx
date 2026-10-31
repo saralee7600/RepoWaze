@@ -16,10 +16,8 @@ import { Waypoints } from 'lucide-react';
 import { EntityNode } from './EntityNode';
 import { buildFlowGraph } from './build-flow';
 
-// Declared at module level so React Flow doesn't see a new object every render.
 const nodeTypes: NodeTypes = { entity: EntityNode };
 
-/** Hide the minimap on small graphs, where it adds clutter rather than orientation. */
 const MINIMAP_MIN_NODES = 8;
 
 interface ProjectGraphProps {
@@ -43,7 +41,6 @@ export function ProjectGraph({ nodes, edges }: ProjectGraphProps) {
   return (
     <div
       className="h-[min(640px,70dvh)] min-h-[360px] overflow-hidden rounded-xl border border-border bg-card/40"
-      // React Flow lays out left-to-right regardless of the page direction.
       dir="ltr"
     >
       <ReactFlow

@@ -20,20 +20,18 @@ import type {
 const GITHUB_API = 'https://api.github.com';
 const REQUEST_TIMEOUT_MS = 15_000;
 const FETCH_CONCURRENCY = 8;
-/** Hard cap so a pathological repository cannot trigger thousands of requests. */
 const MAX_ENTITY_FILES = 500;
-/** Entity files are small; anything larger is almost certainly not hand-written. */
 const MAX_FILE_BYTES = 1_000_000;
 
 const ENTITY_FILE_PATTERN = /\.entity\.ts$/;
-const IGNORED_DIRECTORIES = new Set(['node_modules', 'dist', 'build', 'coverage']);
+const IGNORED_DIRECTORIES = new Set([
+  'node_modules',
+  'dist',
+  'build',
+  'coverage',
+]);
 const NAME_PATTERN = /^[\w.-]+$/;
 
-/**
- * Talks to the GitHub REST API to discover and download TypeORM entity files.
- * Uses Node's built-in `fetch`; an optional `GITHUB_TOKEN` env var raises rate
- * limits and enables private repositories.
- */
 @Injectable()
 export class GithubService {
   private readonly logger = new Logger(GithubService.name);
@@ -43,11 +41,6 @@ export class GithubService {
     this.token = config.get<string>('GITHUB_TOKEN') || undefined;
   }
 
-  /**
-   * Extracts `{ owner, repo }` from a GitHub URL. Accepts https URLs (with an
-   * optional `.git` suffix or `/tree/...` path), `git@github.com:owner/repo.git`
-   * and the `owner/repo` shorthand.
-   */
   parseRepoUrl(rawUrl: string): GithubRepoRef {
     const input = rawUrl.trim();
 
@@ -66,11 +59,17 @@ export class GithubService {
       try {
         url = new URL(input);
       } catch {
-        throw new BadRequestException(`"${rawUrl}" is not a valid GitHub repository URL`);
+        throw new BadRequestException(
+          `"${rawUrl}" is not a valid GitHub repository URL`,
+        );
       }
-      const isGithubHost = ['github.com', 'www.github.com'].includes(url.hostname);
+      const isGithubHost = ['github.com', 'www.github.com'].includes(
+        url.hostname,
+      );
       if (!['http:', 'https:'].includes(url.protocol) || !isGithubHost) {
-        throw new BadRequestException('Only github.com repositories are supported');
+        throw new BadRequestException(
+          'Only github.com repositories are supported',
+        );
       }
       [owner, repo] = url.pathname.split('/').filter(Boolean);
     }
@@ -87,10 +86,6 @@ export class GithubService {
     return { owner, repo };
   }
 
-  /**
-   * Downloads every `*.entity.ts` file found on the repository's default branch.
-   * Returns an empty array when the repository contains none.
-   */
   async fetchEntityFiles(ref: GithubRepoRef): Promise<RepositoryFile[]> {
     const branch = await this.getDefaultBranch(ref);
     const entries = await this.listEntityFiles(ref, branch);
@@ -99,10 +94,14 @@ export class GithubService {
       `Fetching ${entries.length} entity file(s) from ${ref.owner}/${ref.repo}@${branch}`,
     );
 
-    return this.mapWithConcurrency(entries, FETCH_CONCURRENCY, async (entry) => ({
-      path: entry.path,
-      content: await this.fetchBlob(ref, entry.sha),
-    }));
+    return this.mapWithConcurrency(
+      entries,
+      FETCH_CONCURRENCY,
+      async (entry) => ({
+        path: entry.path,
+        content: await this.fetchBlob(ref, entry.sha),
+      }),
+    );
   }
 
   private async getDefaultBranch(ref: GithubRepoRef): Promise<string> {
@@ -112,7 +111,6 @@ export class GithubService {
     return repo.default_branch;
   }
 
-  /** Reads the full recursive git tree and keeps only entity files. */
   private async listEntityFiles(
     ref: GithubRepoRef,
     branch: string,
@@ -141,17 +139,20 @@ export class GithubService {
     if (entry.type !== 'blob' || !ENTITY_FILE_PATTERN.test(entry.path)) {
       return false;
     }
-    if (entry.path.split('/').some((segment) => IGNORED_DIRECTORIES.has(segment))) {
+    if (
+      entry.path.split('/').some((segment) => IGNORED_DIRECTORIES.has(segment))
+    ) {
       return false;
     }
     if (entry.size !== undefined && entry.size > MAX_FILE_BYTES) {
-      this.logger.warn(`Skipping ${entry.path}: file is too large (${entry.size} bytes)`);
+      this.logger.warn(
+        `Skipping ${entry.path}: file is too large (${entry.size} bytes)`,
+      );
       return false;
     }
     return true;
   }
 
-  /** Downloads a file's raw content by blob SHA (immutable, so no path encoding needed). */
   private async fetchBlob(ref: GithubRepoRef, sha: string): Promise<string> {
     const response = await this.request(
       `/repos/${ref.owner}/${ref.repo}/git/blobs/${sha}`,
@@ -162,11 +163,9 @@ export class GithubService {
 
   private async getJson<T>(path: string): Promise<T> {
     const response = await this.request(path, 'application/vnd.github+json');
-    // The response body is trusted to match the documented GitHub schema.
     return (await response.json()) as T;
   }
 
-  /** Performs an authenticated GET and maps GitHub failures to Nest HTTP exceptions. */
   private async request(path: string, accept: string): Promise<Response> {
     const headers: Record<string, string> = {
       Accept: accept,
@@ -197,7 +196,8 @@ export class GithubService {
   private toException(response: Response): HttpException {
     const rateLimited =
       response.status === 429 ||
-      (response.status === 403 && response.headers.get('x-ratelimit-remaining') === '0');
+      (response.status === 403 &&
+        response.headers.get('x-ratelimit-remaining') === '0');
 
     if (rateLimited) {
       return new HttpException(
@@ -211,15 +211,20 @@ export class GithubService {
           'Repository not found (if it is private, configure a valid GITHUB_TOKEN)',
         );
       case 403:
-        return new ForbiddenException('GitHub denied access to this repository');
+        return new ForbiddenException(
+          'GitHub denied access to this repository',
+        );
       case 401:
-        return new BadGatewayException('The configured GITHUB_TOKEN was rejected by GitHub');
+        return new BadGatewayException(
+          'The configured GITHUB_TOKEN was rejected by GitHub',
+        );
       default:
-        return new BadGatewayException(`GitHub API responded with status ${response.status}`);
+        return new BadGatewayException(
+          `GitHub API responded with status ${response.status}`,
+        );
     }
   }
 
-  /** Maps `items` with at most `limit` promises in flight, preserving order. */
   private async mapWithConcurrency<T, R>(
     items: readonly T[],
     limit: number,

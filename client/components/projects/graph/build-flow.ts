@@ -8,7 +8,6 @@ export interface FlowGraph {
   edges: Edge[];
 }
 
-/** Converts a project's persisted nodes and edges into React Flow's nodes and edges. */
 export function buildFlowGraph(nodes: readonly INode[], edges: readonly IEdge[]): FlowGraph {
   const links = toGraphLinks(nodes, edges);
   const positions = layoutLayers(nodes, links);

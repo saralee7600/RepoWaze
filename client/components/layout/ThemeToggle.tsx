@@ -4,7 +4,6 @@ import { Moon, Sun } from 'lucide-react';
 import { buttonStyles } from '@/components/ui/buttonStyles';
 import { useAppearance } from '@/hooks/useAppearance';
 
-/** One-click dark/light switch; updates `html[data-theme]` instantly. */
 export function ThemeToggle() {
   const { appearance, update } = useAppearance();
   const next = appearance.theme === 'dark' ? 'light' : 'dark';

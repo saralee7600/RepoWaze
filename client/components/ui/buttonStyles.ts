@@ -20,7 +20,6 @@ const sizes: Record<ButtonSize, string> = {
   icon: 'size-8',
 };
 
-/** shadcn-style button class builder; works for `<button>` and `<Link>` alike. */
 export function buttonStyles(
   options: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {},
 ): string {

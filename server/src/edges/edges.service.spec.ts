@@ -5,7 +5,6 @@ import type { ProjectAccessService } from '../projects/project-access.service';
 import type { EdgeEntity } from './edge.entity';
 import { EdgesService } from './edges.service';
 
-// `@nestjs/typeorm` is ESM-only; see the stub for details.
 jest.mock('@nestjs/typeorm', () =>
   jest.requireActual<typeof import('../testing/nestjs-typeorm.stub')>(
     '../testing/nestjs-typeorm.stub',
@@ -94,7 +93,7 @@ describe('EdgesService ownership', () => {
 
     it('refuses to connect nodes that belong to another project', async () => {
       const { service, repo, nodes } = setup();
-      nodes.count.mockResolvedValue(1); // only one of the two nodes is in the project
+      nodes.count.mockResolvedValue(1);
 
       await expect(service.create(OWNER, body)).rejects.toBeInstanceOf(
         BadRequestException,

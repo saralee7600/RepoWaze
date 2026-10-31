@@ -8,7 +8,6 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   RefreshTokenError: 'Your session expired. Please sign in again.',
 };
 
-/** User-facing text for a NextAuth `?error=` code; `null` when there is no error. */
 export function getAuthErrorMessage(code: string | string[] | undefined): string | null {
   const value = Array.isArray(code) ? code[0] : code;
   if (!value) return null;

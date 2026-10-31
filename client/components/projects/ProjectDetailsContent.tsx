@@ -8,18 +8,15 @@ import { ProjectHeader } from './ProjectHeader';
 import { ProjectTabs } from './ProjectTabs';
 
 interface ProjectDetailsContentProps {
-  /** The route's `params` promise, resolved here so the page shell can prerender. */
   params: Promise<{ id: string }>;
 }
 
-/** Route ids are positive integers; anything else can't match a project. */
 function parseProjectId(raw: string): number | null {
   if (!/^\d+$/.test(raw)) return null;
   const id = Number(raw);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
 
-/** Server component: loads one project with its graph on every request. */
 export async function ProjectDetailsContent({ params }: ProjectDetailsContentProps) {
   const id = parseProjectId((await params).id);
   if (id === null) notFound();

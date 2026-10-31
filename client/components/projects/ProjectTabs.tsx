@@ -10,7 +10,6 @@ interface ProjectTabsProps {
   project: ProjectDetails;
 }
 
-/** Tab ids are part of shareable URLs (`?tab=entities`), so keep them stable. */
 export function ProjectTabs({ project }: ProjectTabsProps) {
   const items: TabItem[] = [
     {

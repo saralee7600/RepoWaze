@@ -9,11 +9,6 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-/**
- * Application shell: fixed sidebar on desktop, slide-over drawer on mobile,
- * a sticky header, and an independently scrolling content area.
- * Uses logical (start/end) utilities so it mirrors correctly under `dir="rtl"`.
- */
 export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

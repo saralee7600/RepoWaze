@@ -11,10 +11,8 @@ import {
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface LoginCardProps {
-  /** Where to land after signing in. */
   callbackUrl: string;
   errorMessage?: string | null;
-  /** Renders the button inert (used as the loading fallback). */
   disabled?: boolean;
 }
 

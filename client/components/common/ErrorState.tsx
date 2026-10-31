@@ -9,12 +9,7 @@ import { buttonStyles } from '@/components/ui/buttonStyles';
 interface ErrorStateProps {
   title?: string;
   message: string;
-  /**
-   * Custom retry handler (e.g. the `retry` prop of an `error.tsx` boundary).
-   * Defaults to re-running the current route's server data fetching.
-   */
   onRetry?: () => void;
-  /** Optional secondary link, e.g. back to the dashboard. */
   action?: { href: string; label: string; icon?: ReactNode };
 }
 

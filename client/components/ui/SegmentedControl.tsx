@@ -6,7 +6,6 @@ interface SegmentedOption<T extends string> {
 }
 
 interface SegmentedControlProps<T extends string> {
-  /** Accessible name for the whole group. */
   label: string;
   value: T;
   options: readonly SegmentedOption<T>[];
@@ -14,7 +13,6 @@ interface SegmentedControlProps<T extends string> {
   className?: string;
 }
 
-/** Compact single-choice toggle group (exposes state via `aria-pressed`). */
 export function SegmentedControl<T extends string>({
   label,
   value,

@@ -11,10 +11,8 @@ import { pickDefined } from '../common/pick-defined';
 import { ProjectAccessService } from '../projects/project-access.service';
 import { NodeEntity } from './node.entity';
 
-/** Node columns a client may write; `id` is server-controlled. */
 const EDITABLE_FIELDS = ['projectId', 'label', 'type', 'metadata'] as const;
 
-/** Every method is scoped to nodes whose parent project belongs to `ownerId`. */
 @Injectable()
 export class NodesService {
   constructor(
@@ -53,7 +51,6 @@ export class NodesService {
     const node = await this.findOwned(id, ownerId);
     const changes = pickDefined(data, EDITABLE_FIELDS);
 
-    // Moving a node into another project requires owning that project too.
     if (
       changes.projectId !== undefined &&
       changes.projectId !== node.projectId
@@ -61,7 +58,6 @@ export class NodesService {
       await this.access.assertOwned(changes.projectId, ownerId);
     }
     if (Object.keys(changes).length > 0) {
-      // TypeORM's update() typing can't express a Record<string, unknown> JSON column.
       await this.repo.update(id, changes as QueryDeepPartialEntity<NodeEntity>);
     }
     return this.findOwned(id, ownerId);
