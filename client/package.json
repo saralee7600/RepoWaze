@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build:shared": "cd ../shared && npm run build",
+    "build": "npm run build:shared && nest build",
     "dev": "next dev -p 3001",
-    "build": "next build",
     "start": "next start -p 3001",
     "lint": "eslint"
   },
