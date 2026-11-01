@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build:shared": "cd ../shared && npm run build",
-    "build": "npm run build:shared && nest build",
-    "dev": "next dev -p 3001",
-    "start": "next start -p 3001",
-    "lint": "eslint"
+  "build:shared": "cd ../shared && npm run build",
+  "build": "npm run build:shared && next build",
+  "dev": "next dev -p 3001",
+  "start": "next start -p 3001",
+  "lint": "eslint"
   },
   "dependencies": {
     "@hookform/resolvers": "^6.0.2",
