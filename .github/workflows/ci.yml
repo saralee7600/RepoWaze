@@ -13,8 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # The lockfiles are generated with npm 11 (bundled with Node 24); `npm ci`
-  # on the npm 10 that ships with Node 22 rejects them as out of sync.
+  # Lockfiles were generated with npm 11 (bundled with Node 24).
   NODE_VERSION: 24
 
 jobs:
@@ -50,17 +49,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: |
-            server/package-lock.json
-            shared/package-lock.json
 
+      - name: Show toolchain
+        working-directory: .
+        run: node -v && npm -v
+
+      # `file:../shared` + `npm ci` is brittle across npm versions (the lockfile
+      # snapshot of the linked package drifts). `npm install` honours the lockfile
+      # but still resolves the local package.
       - name: Build shared types
         working-directory: shared
-        run: npm ci && npm run build
+        run: npm install --no-audit --no-fund && npm run build
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Lint
         run: npm run lint:check
@@ -83,7 +85,6 @@ jobs:
     defaults:
       run:
         working-directory: client
-    # Placeholder values only - they let `next build` run without real secrets.
     env:
       NEXT_PUBLIC_API_URL: http://localhost:3000
       NEXTAUTH_URL: http://localhost:3001
@@ -96,17 +97,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: |
-            client/package-lock.json
-            shared/package-lock.json
+
+      - name: Show toolchain
+        working-directory: .
+        run: node -v && npm -v
 
       - name: Build shared types
         working-directory: shared
-        run: npm ci && npm run build
+        run: npm install --no-audit --no-fund && npm run build
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Lint
         run: npm run lint
