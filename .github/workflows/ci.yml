@@ -13,7 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: 22
+  # The lockfiles are generated with npm 11 (bundled with Node 24); `npm ci`
+  # on the npm 10 that ships with Node 22 rejects them as out of sync.
+  NODE_VERSION: 24
 
 jobs:
   server:

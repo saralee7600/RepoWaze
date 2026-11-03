@@ -79,7 +79,7 @@ All endpoints require a valid bearer token.
 
 ### Prerequisites
 
-- Node.js 22 or newer
+- Node.js 24 (npm 11). The lockfiles are generated with npm 11, so `npm ci` fails on the npm 10 that ships with Node 22 (`npm install` still works)
 - MySQL 8
 - A Google OAuth client ([create one](https://console.cloud.google.com/apis/credentials)) with the authorized redirect URI
   `http://localhost:3001/api/auth/callback/google`
