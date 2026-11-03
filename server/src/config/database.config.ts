@@ -30,6 +30,5 @@ export function buildDatabaseOptions(read: EnvReader): DataSourceOptions {
     entities: [join(SRC_ROOT, '**', `*.entity.${EXTENSION}`)],
     migrations: [join(SRC_ROOT, 'migrations', `*.${EXTENSION}`)],
     synchronize: false,
-    migrationsRun: true
   };
 }
