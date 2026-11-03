@@ -11,7 +11,8 @@ Paste a GitHub URL and RepoWaze reads the repository's TypeORM entities, parses 
 
 ## Features
 
-- **Import from GitHub** - paste `https://github.com/owner/repo`, `owner/repo` or an SSH URL.
+- **Import from GitHub** - paste `https://github.com/owner/repo`, `owner/repo` or an SSH URL. Importing the same repository twice is rejected.
+- **Sync** - refresh a project's map from the latest code on GitHub with one click.
 - **Static analysis, no code execution** - entities are parsed with the TypeScript compiler API (AST), never executed.
 - **Interactive graph** - tables as nodes, relations (`one-to-one`, `one-to-many`, `many-to-one`, `many-to-many`) as edges, rendered with React Flow.
 - **Entity details** - columns, types, nullability, primary and generated keys, declared relations.
@@ -69,7 +70,8 @@ All endpoints require a valid bearer token.
 |---|---|---|
 | `GET` | `/projects` | List your projects with node and edge counts |
 | `GET` | `/projects/:id` | Project with its nodes and edges |
-| `POST` | `/projects/import` | Import a repository `{ repoUrl, name? }` |
+| `POST` | `/projects/import` | Import a repository `{ repoUrl, name? }` (`409` if you already imported it) |
+| `POST` | `/projects/:id/sync` | Re-read the repository and refresh the project's nodes and edges |
 | `POST` / `PUT` / `DELETE` | `/projects`, `/projects/:id` | Create, update, delete |
 | `GET` `POST` `PUT` `DELETE` | `/nodes`, `/edges` | CRUD for nodes and edges |
 
@@ -160,6 +162,7 @@ npm run lint
 ## Limitations
 
 - Only **TypeORM** projects are supported, and only entities declared in `*.entity.ts` files with the `@Entity()` decorator. Prisma, Sequelize and `EntitySchema` are not supported yet.
+- An import is a snapshot. Changes pushed to GitHub afterwards are picked up when you press **Sync with GitHub** on the project page (there is no automatic or webhook-based sync). Syncing recreates the project's nodes and edges; if the repository can no longer be analysed, the existing data is kept.
 - Only the repository's default branch is imported.
 - At most 500 entity files and 1 MB per file are processed.
 - Importing private repositories requires the server's `GITHUB_TOKEN` to have access to them.

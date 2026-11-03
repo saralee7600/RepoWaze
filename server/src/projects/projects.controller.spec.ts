@@ -24,6 +24,7 @@ describe('ProjectsController (HTTP, with the real AuthGuard)', () => {
     findAll: jest.fn(),
     findOne: jest.fn(),
     importFromGithub: jest.fn(),
+    syncFromGithub: jest.fn(),
     delete: jest.fn(),
   };
   const verify = jest.fn();
@@ -58,6 +59,7 @@ describe('ProjectsController (HTTP, with the real AuthGuard)', () => {
       ['GET', '/projects'],
       ['GET', '/projects/1'],
       ['POST', '/projects/import'],
+      ['POST', '/projects/1/sync'],
       ['DELETE', '/projects/1'],
     ])('%s %s answers 401 without a token', async (method, path) => {
       const res =
@@ -100,6 +102,25 @@ describe('ProjectsController (HTTP, with the real AuthGuard)', () => {
 
       expect(res.status).toBe(201);
       expect(service.importFromGithub).toHaveBeenCalledWith(body, USER.id);
+    });
+  });
+
+  describe('POST /projects/:id/sync', () => {
+    it('syncs on behalf of the caller', async () => {
+      service.syncFromGithub.mockResolvedValue({ id: 4 });
+
+      const res = await authed(request(server).post('/projects/4/sync'));
+
+      expect(res.status).toBe(201);
+      expect(service.syncFromGithub).toHaveBeenCalledWith(4, USER.id);
+    });
+
+    it('answers 404 for a project the caller does not own', async () => {
+      service.syncFromGithub.mockRejectedValue(new NotFoundException());
+
+      const res = await authed(request(server).post('/projects/4/sync'));
+
+      expect(res.status).toBe(404);
     });
   });
 

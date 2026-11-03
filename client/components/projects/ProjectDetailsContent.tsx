@@ -42,6 +42,7 @@ export async function ProjectDetailsContent({ params }: ProjectDetailsContentPro
   return (
     <div className="space-y-6">
       <ProjectHeader
+        id={project.id}
         repoName={project.repoName}
         repoUrl={project.repoUrl}
         createdAt={project.createdAt}

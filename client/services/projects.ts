@@ -12,4 +12,7 @@ export const projectsService = {
 
   importProject: (payload: IImportProjectRequest, signal?: AbortSignal) =>
     http.post<ImportProjectResponse>('/projects/import', payload, { signal }),
+
+  sync: (id: number, signal?: AbortSignal) =>
+    http.post<ProjectDetails>(`/projects/${id}/sync`, undefined, { signal }),
 };

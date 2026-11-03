@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   Logger,
   NotFoundException,
@@ -10,6 +11,7 @@ import { DataSource, Repository } from 'typeorm';
 import type { IProject, IProjectSummary } from '@repowaze/shared';
 import { pickDefined } from '../common/pick-defined';
 import { ProjectAccessService } from './project-access.service';
+import { saveGraph, toRepoUrl } from './project-graph.persistence';
 import { ProjectEntity } from './project.entity';
 import { NodeEntity } from '../nodes/node.entity';
 import { EdgeEntity } from '../edges/edge.entity';
@@ -117,6 +119,59 @@ export class ProjectsService {
     const { repoUrl, name } = this.validateImportRequest(dto);
 
     const ref = this.github.parseRepoUrl(repoUrl);
+    await this.assertNotImported(ref, ownerId);
+
+    const graph = await this.loadGraph(ref);
+    const projectId = await this.persistGraph(ref, name, graph, ownerId);
+    this.logger.log(
+      `Imported ${ref.owner}/${ref.repo} as project ${projectId}: ${graph.nodes.length} node(s), ${graph.edges.length} edge(s)`,
+    );
+
+    return this.findOne(projectId, ownerId);
+  }
+
+  /**
+   * Re-reads the repository behind an existing project and replaces its nodes
+   * and edges with the current state. The project itself (id, name, owner,
+   * creation date) is kept. If the repository can no longer be analysed, the
+   * existing data is left untouched.
+   */
+  async syncFromGithub(id: number, ownerId: string): Promise<ProjectEntity> {
+    await this.access.assertOwned(id, ownerId);
+    const project = await this.repo.findOneOrFail({
+      where: { id, ownerId },
+    });
+
+    const ref = this.github.parseRepoUrl(project.repoUrl);
+    const graph = await this.loadGraph(ref);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.delete(EdgeEntity, { projectId: id });
+      await manager.delete(NodeEntity, { projectId: id });
+      await saveGraph(manager, id, graph);
+    });
+    this.logger.log(
+      `Synced project ${id} (${ref.owner}/${ref.repo}): ${graph.nodes.length} node(s), ${graph.edges.length} edge(s)`,
+    );
+
+    return this.findOne(id, ownerId);
+  }
+
+  private async assertNotImported(
+    ref: GithubRepoRef,
+    ownerId: string,
+  ): Promise<void> {
+    const existing = await this.repo.findOne({
+      where: { ownerId, repoUrl: toRepoUrl(ref) },
+    });
+    if (existing) {
+      throw new ConflictException(
+        `${ref.owner}/${ref.repo} is already imported as "${existing.repoName}". Open that project and use Sync to pick up new changes.`,
+      );
+    }
+  }
+
+  private async loadGraph(ref: GithubRepoRef): Promise<ParsedEntityGraph> {
     const files = await this.github.fetchEntityFiles(ref);
     if (files.length === 0) {
       throw new UnprocessableEntityException(
@@ -130,17 +185,7 @@ export class ProjectsService {
         `Found ${files.length} entity file(s) in ${ref.owner}/${ref.repo}, but none declares an @Entity() class`,
       );
     }
-
-    const projectId = await this.persistGraph(ref, name, graph, ownerId);
-    this.logger.log(
-      `Imported ${ref.owner}/${ref.repo} as project ${projectId}: ${graph.nodes.length} node(s), ${graph.edges.length} edge(s)`,
-    );
-
-    return this.repo.findOneOrFail({
-      where: { id: projectId },
-      relations: { nodes: true, edges: true },
-      order: { nodes: { id: 'ASC' }, edges: { id: 'ASC' } },
-    });
+    return graph;
   }
 
   private validateImportRequest(dto: ImportProjectDto): {
@@ -173,43 +218,12 @@ export class ProjectsService {
     return this.dataSource.transaction(async (manager) => {
       const project = await manager.save(
         manager.create(ProjectEntity, {
-          repoUrl: `https://github.com/${ref.owner}/${ref.repo}`,
+          repoUrl: toRepoUrl(ref),
           repoName: name ?? `${ref.owner}/${ref.repo}`,
           ownerId,
         }),
       );
-
-      const nodes = await manager.save(
-        graph.nodes.map((node) =>
-          manager.create(NodeEntity, {
-            projectId: project.id,
-            label: node.className,
-            type: 'entity',
-            metadata: node.metadata,
-          }),
-        ),
-      );
-
-      const nodeIdByClass = new Map<string, number>();
-      nodes.forEach((saved, index) => {
-        nodeIdByClass.set(graph.nodes[index].className, saved.id);
-      });
-
-      const edges = graph.edges.flatMap((edge) => {
-        const sourceNodeId = nodeIdByClass.get(edge.sourceClass);
-        const targetNodeId = nodeIdByClass.get(edge.targetClass);
-        if (sourceNodeId === undefined || targetNodeId === undefined) return [];
-
-        return manager.create(EdgeEntity, {
-          projectId: project.id,
-          sourceNodeId,
-          targetNodeId,
-          relationType: edge.relationType,
-          label: edge.label,
-        });
-      });
-      await manager.save(edges);
-
+      await saveGraph(manager, project.id, graph);
       return project.id;
     });
   }

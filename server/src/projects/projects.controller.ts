@@ -46,6 +46,16 @@ export class ProjectsController {
     return this.service.importFromGithub(body, user.id);
   }
 
+  // Re-reads the repository and refreshes the project's nodes and edges.
+  @Post(':id/sync')
+  @Throttle({ default: IMPORT_THROTTLE })
+  syncFromGithub(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.service.syncFromGithub(id, user.id);
+  }
+
   @Post()
   create(
     @Body() body: CreateProjectDto,

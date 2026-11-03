@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { ArrowLeft, Boxes, CalendarDays, ExternalLink, Waypoints } from 'lucide-react';
 import { buttonStyles } from '@/components/ui/buttonStyles';
 import { displayUrl, formatDate, formatNumber, pluralize } from '@/lib/format';
+import { SyncProjectButton } from './SyncProjectButton';
 
 interface ProjectHeaderProps {
+  id: number;
   repoName: string;
   repoUrl: string;
   createdAt: string;
@@ -11,13 +13,16 @@ interface ProjectHeaderProps {
   edgeCount: number;
 }
 
-export function ProjectHeader({ repoName, repoUrl, createdAt, nodeCount, edgeCount }: ProjectHeaderProps) {
+export function ProjectHeader({ id, repoName, repoUrl, createdAt, nodeCount, edgeCount }: ProjectHeaderProps) {
   return (
     <header className="space-y-4">
-      <Link href="/" className={buttonStyles({ variant: 'ghost', size: 'sm', className: '-ms-3' })}>
-        <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-        All projects
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link href="/" className={buttonStyles({ variant: 'ghost', size: 'sm', className: '-ms-3' })}>
+          <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+          All projects
+        </Link>
+        <SyncProjectButton projectId={id} repoName={repoName} />
+      </div>
 
       <div className="space-y-2">
         <h2 className="truncate text-2xl font-semibold tracking-tight text-foreground" title={repoName}>
