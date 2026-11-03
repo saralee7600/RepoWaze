@@ -12,9 +12,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { NodesService } from './nodes.service';
-import type { INode } from '@repowaze/shared';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { CreateNodeDto } from './dto/create-node.dto';
+import { UpdateNodeDto } from './dto/update-node.dto';
 
 @Controller('nodes')
 export class NodesController {
@@ -38,14 +39,14 @@ export class NodesController {
   }
 
   @Post()
-  create(@Body() body: Partial<INode>, @CurrentUser() user: AuthenticatedUser) {
+  create(@Body() body: CreateNodeDto, @CurrentUser() user: AuthenticatedUser) {
     return this.service.create(user.id, body);
   }
 
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<INode>,
+    @Body() body: UpdateNodeDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.service.update(id, user.id, body);

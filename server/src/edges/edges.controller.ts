@@ -12,9 +12,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { EdgesService } from './edges.service';
-import type { IEdge } from '@repowaze/shared';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { CreateEdgeDto } from './dto/create-edge.dto';
+import { UpdateEdgeDto } from './dto/update-edge.dto';
 
 @Controller('edges')
 export class EdgesController {
@@ -38,14 +39,14 @@ export class EdgesController {
   }
 
   @Post()
-  create(@Body() body: Partial<IEdge>, @CurrentUser() user: AuthenticatedUser) {
+  create(@Body() body: CreateEdgeDto, @CurrentUser() user: AuthenticatedUser) {
     return this.service.create(user.id, body);
   }
 
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<IEdge>,
+    @Body() body: UpdateEdgeDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.service.update(id, user.id, body);

@@ -6,10 +6,8 @@ export type EnvReader = (key: string) => string | undefined;
 
 const DEFAULT_MYSQL_PORT = 3306;
 
-
 const SRC_ROOT = join(__dirname, '..');
 const EXTENSION = __filename.endsWith('.ts') ? 'ts' : 'js';
-
 
 export function buildDatabaseOptions(read: EnvReader): DataSourceOptions {
   return {

@@ -10,11 +10,14 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ProjectsService } from './projects.service';
-import type { IProject } from '@repowaze/shared';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { IMPORT_THROTTLE } from '../config/throttle.config';
+import { CreateProjectDto } from './dto/create-project.dto';
 import { ImportProjectDto } from './dto/import-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -33,7 +36,9 @@ export class ProjectsController {
     return this.service.findOne(id, user.id);
   }
 
+  // Each import fans out to many GitHub API calls, so it gets a tighter limit.
   @Post('import')
+  @Throttle({ default: IMPORT_THROTTLE })
   importFromGithub(
     @Body() body: ImportProjectDto,
     @CurrentUser() user: AuthenticatedUser,
@@ -43,7 +48,7 @@ export class ProjectsController {
 
   @Post()
   create(
-    @Body() body: Partial<IProject>,
+    @Body() body: CreateProjectDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.service.create(user.id, body);
@@ -52,7 +57,7 @@ export class ProjectsController {
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<IProject>,
+    @Body() body: UpdateProjectDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.service.update(id, user.id, body);
