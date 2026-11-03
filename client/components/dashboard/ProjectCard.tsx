@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Boxes, CalendarDays, ExternalLink, FolderGit2, Waypoints } from 'lucide-react';
 import { displayUrl, formatDate, formatNumber, pluralize } from '@/lib/format';
 import type { ProjectSummary } from '@/types/api';
+import { SyncProjectButton } from '@/components/projects/SyncProjectButton';
 import { DeleteProjectDialog } from './DeleteProjectDialog';
 
 interface ProjectCardProps {
@@ -58,7 +59,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </a>
         </div>
 
-        <DeleteProjectDialog project={{ id, repoName }} />
+        <div className="flex shrink-0 items-center gap-0.5">
+          <SyncProjectButton projectId={id} repoName={repoName} compact />
+          <DeleteProjectDialog project={{ id, repoName }} />
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

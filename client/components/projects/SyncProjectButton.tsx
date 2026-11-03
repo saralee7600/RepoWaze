@@ -12,9 +12,13 @@ import { projectsService } from '@/services/projects';
 interface SyncProjectButtonProps {
   projectId: number;
   repoName: string;
+  /** Icon-only button, for dense layouts such as project cards. */
+  compact?: boolean;
 }
 
-export function SyncProjectButton({ projectId, repoName }: SyncProjectButtonProps) {
+const SYNC_HINT = 'Re-read the repository on GitHub and update this map';
+
+export function SyncProjectButton({ projectId, repoName, compact = false }: SyncProjectButtonProps) {
   const router = useRouter();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isRefreshing, startRefresh] = useTransition();
@@ -35,20 +39,32 @@ export function SyncProjectButton({ projectId, repoName }: SyncProjectButtonProp
     }
   };
 
+  const icon = isBusy ? (
+    <Loader2 className="animate-spin" aria-hidden="true" />
+  ) : (
+    <RefreshCw aria-hidden="true" />
+  );
+
+  if (compact) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        onClick={handleSync}
+        disabled={isBusy}
+        aria-label={`Sync ${repoName} with GitHub`}
+        title={SYNC_HINT}
+        className="relative z-10 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+      >
+        {icon}
+      </Button>
+    );
+  }
+
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={handleSync}
-      disabled={isBusy}
-      title="Re-read the repository on GitHub and update this map"
-    >
-      {isBusy ? (
-        <Loader2 className="animate-spin" aria-hidden="true" />
-      ) : (
-        <RefreshCw aria-hidden="true" />
-      )}
+    <Button type="button" variant="outline" size="sm" onClick={handleSync} disabled={isBusy} title={SYNC_HINT}>
+      {icon}
       {isBusy ? 'Syncing…' : 'Sync with GitHub'}
     </Button>
   );
