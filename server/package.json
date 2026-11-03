@@ -9,7 +9,6 @@
     "prebuild": "npm --prefix ../shared install --include=dev && npm --prefix ../shared run build",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-
     "start": "nest start",
     "start:dev": "nest start --watch",
     "dev": "nest start --watch",
@@ -21,7 +20,11 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/config/typeorm.config.ts",
+    "migration:run": "npm run typeorm -- migration:run -d src/config/typeorm.config.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/typeorm.config.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -58,7 +61,6 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
